@@ -6,6 +6,8 @@ import { SpotifyTrack } from "./SpotifyTrack";
 import { GetTracksResponse, Track } from "src/app/youtube/route";
 import { GoogleOAuthButton } from "./GoogleOAuthButton";
 import { getYoutubeTracksIndex } from "src/app/youtube/tracks-index";
+import axios from "node_modules/axios";
+import { getPlaylists } from "src/app/youtube/getPlaylists";
 
 interface YoutubeTracksProps {
   onCurrentTrack: (track: Track) => void;
@@ -78,10 +80,14 @@ export const YoutubeTracks = ({
   }, []);
 
   useEffect(() => {
-    // (async () => {
-    //   const v = await getYoutubeTracksIndex();
-    //   console.log(v);
-    // })();
+    (async () => {
+      const response = await getPlaylists();
+      // console.log(response);
+
+      // if (response) {
+      //   setTracks(response.items.map(p => ({})));
+      // }
+    })();
     fetchTracks();
   }, []);
 
