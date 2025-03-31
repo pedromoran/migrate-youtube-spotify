@@ -1,0 +1,15 @@
+@import "tailwindcss";
+
+@utility skeleton {
+  @apply bg-[rgb(217_218_225_/_20%)] animate-pulse rounded min-h-1 min-w-1;
+}
+
+@layer components {
+  .btn-flex {
+    @apply px-3 py-1.5 font-medium cursor-pointer text-white border outline-sky-600 hover:ring-1 active:outline-4 bg-transparent rounded flex space-x-3;
+  }
+
+  .btn {
+    @apply px-3 py-1.5 font-medium cursor-pointer text-white border outline-sky-600 hover:ring-1 active:outline-4 bg-transparent rounded;
+  }
+}
