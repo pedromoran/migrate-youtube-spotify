@@ -9,6 +9,8 @@ import { ArrowLongRightIcon } from "./common/Icons";
 import { removeSpotifyCookies } from "src/utils/removeSpotifyCookies";
 import { YoutubeChannel } from "src/services/youtube/getSelfChannel";
 import Image from "node_modules/next/image";
+import { YoutubePlaylist } from "src/services/youtube/getPlaylists";
+import Link from "node_modules/next/link";
 
 interface YoutubeToSpotifyProps {
   spotify: {
@@ -33,6 +35,8 @@ export function YoutubeToSpotify({
   const [tracks, setTracks] = useState<GetTracksResponse | null>(
     null,
   );
+  const [youtubePlaylist, setYoutubePlaylist] =
+    useState<YoutubePlaylist | null>(null);
   const [spotifySearch, setSpotifySearch] = useState<string | null>(
     null,
   );
@@ -71,7 +75,14 @@ export function YoutubeToSpotify({
       <>
         <h1 className="text-lg border-b">Select a migration mode</h1>
         <section className="space-y-10">
-          <button className="btn flex items-center space-x-12 rounded-md shadow p-5 ">
+          <Link
+            // onClick={() =>
+            //   setMigrationMode(MigrationModeEnum.youtube_to_spotify)
+            // }
+            href={"/youtube-to-spotify"}
+            type="button"
+            className="btn flex items-center space-x-12 rounded-md shadow p-5 "
+          >
             <div>
               <Image
                 className="mx-auto"
@@ -93,8 +104,12 @@ export function YoutubeToSpotify({
                 height={80}
               />
             </div>
-          </button>
-          <button className="btn flex items-center space-x-12 rounded-md shadow p-5 ">
+          </Link>
+          <Link
+            href={"/spotify-to-youtube"}
+            type="button"
+            className="btn flex items-center space-x-12 rounded-md shadow p-5 "
+          >
             <div>
               <Image
                 className="mx-auto"
@@ -116,8 +131,21 @@ export function YoutubeToSpotify({
                 height={80}
               />
             </div>
-          </button>
+          </Link>
         </section>
+      </>
+    );
+  }
+
+  if (
+    migrationMode === MigrationModeEnum.youtube_to_spotify &&
+    !youtubePlaylist
+  ) {
+    return (
+      <>
+        <h1 className="text-lg border-b">
+          Select a youtube playlist to migrate to spotify
+        </h1>
       </>
     );
   }
