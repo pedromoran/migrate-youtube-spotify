@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { GetTracksResponse } from "src/app/youtube/route";
-import { SpotifyPanel } from "src/components/SpotifyTracks";
+import { SpotifyPanel } from "src/components/SpotifyPanel";
 import { SpotifyTrack } from "src/components/SpotifyTrack";
 import { YoutubePanel } from "src/components/YoutubePanel";
 import { SpotifyUserProfile } from "src/interfaces/spotify/user-profile";
@@ -60,15 +60,15 @@ export function YoutubeToSpotify({
 
   return (
     <>
-      <button className="btn" onClick={() => removeSpotifyCookies()}>
-        Delete cookies
-      </button>
+      <h1 className="text-lg border-b">
+        Migrate youtube playlist to spotify
+      </h1>
       <section className="grid gap-x-8 grid-cols-[600px_auto_600px]">
         <YoutubePanel
           onCurrentTrack={t => setSpotifySearch(t.q)}
           channel={youtube.channel}
         />
-        <div className="grid place-content-center text-white">
+        <div className="text-white mt-1">
           <ArrowLongRightIcon width={100} height={100} />
         </div>
         <SpotifyPanel

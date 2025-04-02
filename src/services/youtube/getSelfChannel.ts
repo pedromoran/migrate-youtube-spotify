@@ -1,6 +1,6 @@
 "use server";
 import axios from "node_modules/axios";
-import { getGoogleAccessFromCookies } from "../../app/auth/google/getGoogleAccessFromCookies";
+import { getGoogleAccessFromCookies } from "../../utils/getGoogleAccessFromCookies";
 
 interface YoutubeChannelResponse {
   kind: string;
@@ -63,7 +63,7 @@ export interface YoutubeChannel {
   title: string;
   description: string;
   customUrl: string;
-  thumbnails: string;
+  thumbnail: string;
 }
 
 export async function getSelfChannel(): Promise<YoutubeChannel | null> {
@@ -86,7 +86,7 @@ export async function getSelfChannel(): Promise<YoutubeChannel | null> {
       title: response.data.items[0].snippet.title,
       description: response.data.items[0].snippet.description,
       customUrl: response.data.items[0].snippet.customUrl,
-      thumbnails:
+      thumbnail:
         response.data.items[0].snippet.thumbnails.default.url,
     };
   } catch (error) {

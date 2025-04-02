@@ -44,8 +44,8 @@ export const YoutubeTrack = ({
   return (
     <div
       className={classNames(
-        "group grid grid-cols-[100px_auto] gap-8 rounded-md shadow p-5 bg-[#181818] space-x-5",
-        { "is-previous-track bg-[#18181870]": isPrev }
+        "group grid grid-cols-[100px_auto] gap-8 rounded-md shadow p-5 bg-[#232127] space-x-5",
+        { "is-previous-track bg-[#18181870]": isPrev },
       )}
     >
       <img src={thumbnail} alt="track thumbnail" />
@@ -75,7 +75,7 @@ export const YoutubeTrack = ({
                 <button
                   onClick={onMoveToTrack}
                   className={classNames(
-                    "mt-2 cursor-pointer active:outline-4 outline-sky-600 ml-auto block bg-[#d7811e] hover:brightness-115  rounded w-max px-3 py-1.5"
+                    "mt-2 cursor-pointer active:outline-4 outline-sky-600 ml-auto block bg-[#d7811e] hover:brightness-115  rounded w-max px-3 py-1.5",
                     // {"brightness-150 opacity-100": isPrev}
                   )}
                 >

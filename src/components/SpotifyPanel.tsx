@@ -6,7 +6,11 @@ import { SearchInput } from "./SearchInput";
 import { SpotifyOAuthButton } from "./SpotifyOAuthButton";
 import { SpotifyUserProfile } from "src/interfaces/spotify/user-profile";
 import { SpotifySignOutButton } from "./SpotifySignOutButton";
-import { SpotifyCookieEnum } from "src/app/auth/spotify/cookies/interfaces";
+import { SpotifyCookieEnum } from "src/interfaces/spotify-cookies";
+import { ProfileInfo } from "./common/ProfileInfo";
+import { removeSpotifyCookies } from "src/utils/removeSpotifyCookies";
+import { getGoogleAccessFromCookies } from "src/utils/getGoogleAccessFromCookies";
+import { getSpotifyAccessFromCookies } from "src/utils/getSpotifyAccessFromCookies";
 
 interface SpotifyPanelProps {
   search: string | null;
@@ -25,7 +29,9 @@ export const SpotifyPanel = ({
 
   const fetchSpotifyTracks = async (search: string) => {
     if (search === "") {
+      controllerRef.current.abort();
       setTracks([]);
+      setIsLoadingTracks(false);
       return;
     }
     controllerRef.current.abort();
@@ -37,38 +43,38 @@ export const SpotifyPanel = ({
     params.append("type", "track");
 
     const signal = controllerRef.current.signal;
-    // const authorization = `${auth?.tokenType} ${auth?.accessToken}`;
+    const { authorization } = await getSpotifyAccessFromCookies();
 
-    // if (!authorization) return;
-    // try {
-    //   const data = await fetch(
-    //     "https://api.spotify.com/v1/search?" + params.toString(),
-    //     {
-    //       headers: { authorization },
-    //       signal,
-    //     },
-    //   )
-    //     .then(async r => {
-    //       const data = await r.json();
-    //       if (r.ok) return data;
-    //       if (data.error.message.includes("auth"))
-    //         throw new Error("Need to sign into spotify");
-    //       throw new Error(
-    //         "An error occurred while fetching spotify tracks",
-    //       );
-    //     })
-    //     .then(r => r);
+    if (!authorization) return;
+    try {
+      const data = await fetch(
+        "https://api.spotify.com/v1/search?" + params.toString(),
+        {
+          headers: { authorization },
+          signal,
+        },
+      )
+        .then(async r => {
+          const data = await r.json();
+          if (r.ok) return data;
+          if (data.error.message.includes("auth"))
+            throw new Error("Need to sign into spotify");
+          throw new Error(
+            "An error occurred while fetching spotify tracks",
+          );
+        })
+        .then(r => r);
 
-    //   const formattedTracks = formatSpotifyTracks(data);
-    //   setTracks(formattedTracks);
-    //   onFetchedTracks(formattedTracks);
-    //   setIsLoadingTracks(false);
-    // } catch (e) {
-    //   const error = e as { name: string; message: string };
-    //   if (error.name === "AbortError") return;
-    //   setIsLoadingTracks(false);
-    //   // alert(error.message);
-    // }
+      const formattedTracks = formatSpotifyTracks(data);
+      setTracks(formattedTracks);
+      onFetchedTracks(formattedTracks);
+      setIsLoadingTracks(false);
+    } catch (e) {
+      const error = e as { name: string; message: string };
+      if (error.name === "AbortError") return;
+      setIsLoadingTracks(false);
+      // alert(error.message);
+    }
   };
 
   return (
@@ -83,30 +89,35 @@ export const SpotifyPanel = ({
           height="120"
         />
         {userProfile ? (
-          <section className="flex mx-auto space-x-5">
-            <div className="w-[80px] h-[80px]">
-              {userProfile.images[0] ? (
-                <img
-                  src={userProfile.images[0]?.url}
-                  className="rounded-full w-full h-full object-cover"
-                  alt="spotify user profile image"
-                />
-              ) : (
-                <span className="grid place-content-center w-full h-full rounded-full text-4xl font-extrabold bg-sky-700 text-white">
-                  {userProfile.display_name[0]}
-                </span>
-              )}
-            </div>
-            <div className="flex-grow flex justify-between items-start">
-              <div>
-                <p>Profile</p>
-                <h2 className="text-2xl font-extrabold">
-                  {userProfile.display_name}
-                </h2>
-              </div>
-              <SpotifySignOutButton />
-            </div>
-          </section>
+          // <section className="flex mx-auto space-x-5">
+          //   <div className="w-[80px] h-[80px]">
+          //     {userProfile.images[0] ? (
+          //       <img
+          //         src={userProfile.images[0]?.url}
+          //         className="rounded-full w-full h-full object-cover"
+          //         alt="spotify user profile image"
+          //       />
+          //     ) : (
+          //       <span className="grid place-content-center w-full h-full rounded-full text-4xl font-extrabold bg-sky-700 text-white">
+          //         {userProfile.display_name[0]}
+          //       </span>
+          //     )}
+          //   </div>
+          //   <div className="flex-grow flex justify-between items-start">
+          //     <div>
+          //       <p>Profile</p>
+          //       <h2 className="text-2xl font-extrabold">
+          //         {userProfile.display_name}
+          //       </h2>
+          //     </div>
+          //     <SpotifySignOutButton />
+          //   </div>
+          // </section>
+          <ProfileInfo
+            image={userProfile.images[0]?.url}
+            title={userProfile.display_name}
+            onClickSignOut={() => removeSpotifyCookies()}
+          />
         ) : (
           <SpotifyOAuthButton />
         )}

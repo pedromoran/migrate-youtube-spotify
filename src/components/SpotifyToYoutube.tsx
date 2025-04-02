@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { GetTracksResponse } from "src/app/youtube/route";
-import { SpotifyPanel } from "src/components/SpotifyTracks";
+import { SpotifyPanel } from "src/components/SpotifyPanel";
 import { SpotifyTrack } from "src/components/SpotifyTrack";
 import { YoutubePanel } from "src/components/YoutubePanel";
 import { SpotifyUserProfile } from "src/interfaces/spotify/user-profile";

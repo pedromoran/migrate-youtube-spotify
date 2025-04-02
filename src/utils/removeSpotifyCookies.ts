@@ -1,6 +1,6 @@
 "use server";
 import { cookies } from "node_modules/next/headers";
-import { SpotifyCookieEnum } from "src/app/auth/spotify/cookies/interfaces";
+import { SpotifyCookieEnum } from "src/interfaces/spotify-cookies";
 
 export async function removeSpotifyCookies() {
   const cookieStore = await cookies();

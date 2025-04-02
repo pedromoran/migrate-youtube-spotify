@@ -1,17 +1,17 @@
 "use server";
 import { cookies } from "node_modules/next/headers";
-import { GoogleCookieEnum } from "./cookies";
+import { SpotifyCookieEnum } from "src/interfaces/spotify-cookies";
 
-export async function getGoogleAccessFromCookies() {
+export async function getSpotifyAccessFromCookies() {
   const cookieStore = await cookies();
   const access_token = cookieStore.get(
-    GoogleCookieEnum.access_token,
+    SpotifyCookieEnum.access_token,
   )?.value;
   const refresh_token = cookieStore.get(
-    GoogleCookieEnum.refresh_token,
+    SpotifyCookieEnum.refresh_token,
   )?.value;
   const token_type = cookieStore.get(
-    GoogleCookieEnum.token_type,
+    SpotifyCookieEnum.token_type,
   )?.value;
   return {
     access_token,

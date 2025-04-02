@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { YoutubeToSpotify } from "src/components/YoutubeToSpotify";
-import { SpotifyCookieEnum } from "./auth/spotify/cookies/interfaces";
+import { SpotifyCookieEnum } from "../interfaces/spotify-cookies";
 import { GoogleCookieEnum } from "./auth/google/cookies";
 import axios, { AxiosError } from "axios";
 import { removeSpotifyCookies } from "src/utils/removeSpotifyCookies";

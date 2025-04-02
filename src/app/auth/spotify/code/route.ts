@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import { SpotifyCookieEnum } from "../cookies/interfaces";
+import { SpotifyCookieEnum } from "../../../../interfaces/spotify-cookies";
 import axios, { AxiosRequestConfig } from "node_modules/axios";
 import { NextRequest } from "node_modules/next/server";
 

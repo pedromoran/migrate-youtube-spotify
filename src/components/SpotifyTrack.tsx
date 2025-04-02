@@ -15,7 +15,7 @@ export const SpotifyTrack = ({
   track: { thumbnail, album, artist, title, explicit, link },
 }: TrackProps) => {
   return (
-    <div className="grid grid-cols-[100px_auto] gap-8 rounded-md shadow p-5 bg-[#181818] space-x-5">
+    <div className="grid grid-cols-[100px_auto] gap-8 rounded-md shadow p-5 bg-[#232127] space-x-5">
       <img src={thumbnail} alt="track thumbnail" />
       {/* <Image src={thumbnail} alt="track thumbnail" width={120} height={120} /> */}
       <div>

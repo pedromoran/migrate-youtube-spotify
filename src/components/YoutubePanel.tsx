@@ -12,6 +12,8 @@ import {
   YoutubePlaylist,
 } from "src/services/youtube/getPlaylists";
 import { YoutubeChannel } from "src/services/youtube/getSelfChannel";
+import { ProfileInfo } from "./common/ProfileInfo";
+import { removeGoogleCookies } from "src/utils/removeGoogleCookies";
 
 interface YoutubeTracksProps {
   onCurrentTrack: (track: Track) => void;
@@ -85,30 +87,35 @@ export const YoutubePanel = ({
       />
       {!channel && <GoogleOAuthButton />}
       {channel && (
-        <section className="flex mx-auto space-x-5">
-          <div className="w-[80px] h-[80px]">
-            {channel.thumbnails ? (
-              <img
-                src={channel.thumbnails}
-                className="rounded-full w-full h-full object-cover"
-                alt="spotify user profile image"
-              />
-            ) : (
-              <span className="grid place-content-center w-full h-full rounded-full text-4xl font-extrabold bg-sky-700 text-white">
-                {channel.title[0]}
-              </span>
-            )}
-          </div>
-          <div className="flex-grow flex justify-between items-start">
-            <div>
-              <p>Profile</p>
-              <h2 className="text-2xl font-extrabold">
-                {channel.title}
-              </h2>
-            </div>
-            {/* <SpotifySignOutButton /> */}
-          </div>
-        </section>
+        // <section className="flex mx-auto space-x-5">
+        //   <div className="w-[80px] h-[80px]">
+        //     {channel.thumbnails ? (
+        //       <img
+        //         src={channel.thumbnails}
+        //         className="rounded-full w-full h-full object-cover"
+        //         alt="spotify user profile image"
+        //       />
+        //     ) : (
+        //       <span className="grid place-content-center w-full h-full rounded-full text-4xl font-extrabold bg-sky-700 text-white">
+        //         {channel.title[0]}
+        //       </span>
+        //     )}
+        //   </div>
+        //   <div className="flex-grow flex justify-between items-start">
+        //     <div>
+        //       <p>Profile</p>
+        //       <h2 className="text-2xl font-extrabold">
+        //         {channel.title}
+        //       </h2>
+        //     </div>
+        //     {/* <SpotifySignOutButton /> */}
+        //   </div>
+        // </section>
+        <ProfileInfo
+          image={channel.thumbnail}
+          title={channel.title}
+          onClickSignOut={() => removeGoogleCookies()}
+        />
       )}
       {tracks && (
         <ul className="pr-4 py-4 self-stretch space-y-5 overflow-y-auto max-h-[600px]">
