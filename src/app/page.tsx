@@ -4,7 +4,7 @@ import { SpotifyCookieEnum } from "../interfaces/spotify-cookies";
 import { GoogleCookieEnum } from "./auth/google/cookies";
 import axios, { AxiosError } from "axios";
 import { removeSpotifyCookies } from "src/utils/removeSpotifyCookies";
-import { getSelfChannel } from "src/services/youtube/getSelfChannel";
+import { getYoutubeUserProfile } from "src/services/youtube/getYoutubeUserProfile";
 
 export default async function AppPage() {
   const cookieStore = await cookies();
@@ -89,7 +89,7 @@ export default async function AppPage() {
   //   deleteSpotifyCookies();
   // }
 
-  const youtubeChannel = await getSelfChannel();
+  const youtubeChannel = await getYoutubeUserProfile();
 
   return (
     <div className="min-h-screen">

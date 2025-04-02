@@ -5,14 +5,14 @@ import { SpotifyPanel } from "src/components/SpotifyPanel";
 import { SpotifyTrack } from "src/components/SpotifyTrack";
 import { YoutubePanel } from "src/components/YoutubePanel";
 import { SpotifyUserProfile } from "src/interfaces/spotify/user-profile";
-import { YoutubeChannel } from "src/services/youtube/getSelfChannel";
+import { YoutubeUserProfile } from "src/services/youtube/getYoutubeUserProfile";
 
 interface SpotifyToYoutubeProps {
   spotify: {
     userProfile: SpotifyUserProfile | null;
   };
   youtube: {
-    channel: YoutubeChannel | null;
+    channel: YoutubeUserProfile | null;
   };
 }
 

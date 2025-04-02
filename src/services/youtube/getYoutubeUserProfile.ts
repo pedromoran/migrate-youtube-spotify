@@ -59,14 +59,14 @@ interface Localized {
   description: string;
 }
 
-export interface YoutubeChannel {
+export interface YoutubeUserProfile {
   title: string;
   description: string;
   customUrl: string;
   thumbnail: string;
 }
 
-export async function getSelfChannel(): Promise<YoutubeChannel | null> {
+export async function getYoutubeUserProfile(): Promise<YoutubeUserProfile | null> {
   const { authorization } = await getGoogleAccessFromCookies();
   const url = new URL(process.env.YOUTUBE_ENDPOINT_CHANNELS || "");
 

@@ -7,7 +7,7 @@ import { YoutubePanel } from "src/components/YoutubePanel";
 import { SpotifyUserProfile } from "src/interfaces/spotify/user-profile";
 import { ArrowLongRightIcon } from "./common/Icons";
 import { removeSpotifyCookies } from "src/utils/removeSpotifyCookies";
-import { YoutubeChannel } from "src/services/youtube/getSelfChannel";
+import { YoutubeUserProfile } from "src/services/youtube/getYoutubeUserProfile";
 import Image from "node_modules/next/image";
 import { YoutubePlaylist } from "src/services/youtube/getPlaylists";
 import Link from "node_modules/next/link";
@@ -17,7 +17,7 @@ interface YoutubeToSpotifyProps {
     userProfile: SpotifyUserProfile | null;
   };
   youtube: {
-    channel: YoutubeChannel | null;
+    channel: YoutubeUserProfile | null;
   };
 }
 

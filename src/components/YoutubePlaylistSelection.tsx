@@ -11,13 +11,13 @@ import {
   getPlaylists,
   YoutubePlaylist,
 } from "src/services/youtube/getPlaylists";
-import { YoutubeChannel } from "src/services/youtube/getSelfChannel";
+import { YoutubeUserProfile } from "src/services/youtube/getYoutubeUserProfile";
 import { ProfileInfo } from "./common/ProfileInfo";
 import { removeGoogleCookies } from "src/utils/removeGoogleCookies";
 
 interface YoutubePlaylistSelectionProps {
   onCurrentTrack: (track: Track) => void;
-  channel: YoutubeChannel | null;
+  channel: YoutubeUserProfile | null;
 }
 
 export const YoutubePlaylistSelection = ({
