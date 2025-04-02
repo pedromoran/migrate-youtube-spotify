@@ -140,7 +140,7 @@ function formatYoutubePlaylist(
     id: params.id,
     title: params.snippet.title,
     description: params.snippet.description,
-    thumbnail: params.snippet.thumbnails.default.url,
+    thumbnail: params.snippet.thumbnails.medium.url,
     itemCount: params.contentDetails.itemCount,
   };
 }

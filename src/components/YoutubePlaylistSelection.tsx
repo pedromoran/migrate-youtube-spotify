@@ -15,15 +15,15 @@ import { YoutubeChannel } from "src/services/youtube/getSelfChannel";
 import { ProfileInfo } from "./common/ProfileInfo";
 import { removeGoogleCookies } from "src/utils/removeGoogleCookies";
 
-interface YoutubeTracksProps {
+interface YoutubePlaylistSelectionProps {
   onCurrentTrack: (track: Track) => void;
   channel: YoutubeChannel | null;
 }
 
-export const YoutubePanel = ({
+export const YoutubePlaylistSelection = ({
   onCurrentTrack,
   channel,
-}: YoutubeTracksProps) => {
+}: YoutubePlaylistSelectionProps) => {
   const [playlists, setPlaylists] = useState<
     YoutubePlaylist[] | null
   >(null);

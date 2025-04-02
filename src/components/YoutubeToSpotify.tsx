@@ -8,6 +8,7 @@ import { SpotifyUserProfile } from "src/interfaces/spotify/user-profile";
 import { ArrowLongRightIcon } from "./common/Icons";
 import { removeSpotifyCookies } from "src/utils/removeSpotifyCookies";
 import { YoutubeChannel } from "src/services/youtube/getSelfChannel";
+import Image from "node_modules/next/image";
 
 interface YoutubeToSpotifyProps {
   spotify: {
@@ -18,10 +19,17 @@ interface YoutubeToSpotifyProps {
   };
 }
 
+export enum MigrationModeEnum {
+  spotify_to_youtube = "spotify_to_youtube",
+  youtube_to_spotify = "youtube_to_spotify",
+}
+
 export function YoutubeToSpotify({
   spotify,
   youtube,
 }: YoutubeToSpotifyProps) {
+  const [migrationMode, setMigrationMode] =
+    useState<MigrationModeEnum | null>(null);
   const [tracks, setTracks] = useState<GetTracksResponse | null>(
     null,
   );
@@ -58,24 +66,85 @@ export function YoutubeToSpotify({
   //   }
   // }, []);
 
+  if (migrationMode === null) {
+    return (
+      <>
+        <h1 className="text-lg border-b">Select a migration mode</h1>
+        <section className="space-y-10">
+          <button className="btn flex items-center space-x-12 rounded-md shadow p-5 ">
+            <div>
+              <Image
+                className="mx-auto"
+                src="/youtube_music.svg"
+                alt="youtube music logo"
+                width={80}
+                height={80}
+              />
+            </div>
+            <div className="text-white mt-1">
+              <ArrowLongRightIcon width={75} height={75} />
+            </div>
+            <div>
+              <Image
+                className="mx-auto"
+                src="/spotify.svg"
+                alt="spotify logo"
+                width={80}
+                height={80}
+              />
+            </div>
+          </button>
+          <button className="btn flex items-center space-x-12 rounded-md shadow p-5 ">
+            <div>
+              <Image
+                className="mx-auto"
+                src="/spotify.svg"
+                alt="spotify logo"
+                width={80}
+                height={80}
+              />
+            </div>
+            <div className="text-white mt-1">
+              <ArrowLongRightIcon width={75} height={75} />
+            </div>
+            <div>
+              <Image
+                className="mx-auto"
+                src="/youtube_music.svg"
+                alt="youtube music logo"
+                width={80}
+                height={80}
+              />
+            </div>
+          </button>
+        </section>
+      </>
+    );
+  }
+
   return (
     <>
-      <h1 className="text-lg border-b">
+      {/* <h1 className="text-lg border-b">
         Migrate youtube playlist to spotify
+      </h1> */}
+
+      <h1 className="text-lg border-b">
+        Select a youtube playlist to migrate to spotify
       </h1>
-      <section className="grid gap-x-8 grid-cols-[600px_auto_600px]">
+      {/* <section className="grid gap-x-8 grid-cols-[600px_auto_600px]"> */}
+      <section className="grid gap-x-8 grid-cols-[1200px]">
         <YoutubePanel
           onCurrentTrack={t => setSpotifySearch(t.q)}
           channel={youtube.channel}
         />
-        <div className="text-white mt-1">
+        {/* <div className="text-white mt-1">
           <ArrowLongRightIcon width={100} height={100} />
         </div>
         <SpotifyPanel
           search={spotifySearch}
           onFetchedTracks={handleSpotifyTracks}
           userProfile={spotify.userProfile}
-        />
+        /> */}
       </section>
     </>
   );
