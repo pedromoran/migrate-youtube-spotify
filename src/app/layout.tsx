@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { cookies } from "node_modules/next/headers";
 import "src/globals.css";
+import { GoogleCookieEnum } from "./auth/google/cookies";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -23,11 +25,17 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // const cookieStore = await cookies();
+  // const youtubeAccessToken = cookieStore.get(
+  //   GoogleCookieEnum.access_token,
+  // );
+  // console.log(youtubeAccessToken);
+
   return (
     <html lang="en">
       <body
