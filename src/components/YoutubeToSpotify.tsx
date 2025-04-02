@@ -1,29 +1,20 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { GetTracksResponse } from "src/app/youtube/route";
-import { SpotifyTracks } from "src/components/SpotifyTracks";
+import { SpotifyPanel } from "src/components/SpotifyTracks";
 import { SpotifyTrack } from "src/components/SpotifyTrack";
-import { YoutubeTracks } from "src/components/YoutubeTracks";
+import { YoutubePanel } from "src/components/YoutubePanel";
 import { SpotifyUserProfile } from "src/interfaces/spotify/user-profile";
 import { ArrowLongRightIcon } from "./common/Icons";
 import { removeSpotifyCookies } from "src/utils/removeSpotifyCookies";
+import { YoutubeChannel } from "src/services/youtube/getSelfChannel";
 
 interface YoutubeToSpotifyProps {
   spotify: {
     userProfile: SpotifyUserProfile | null;
-    auth: {
-      accessToken: string;
-      tokenType: string;
-      refreshToken: string;
-    } | null;
   };
   youtube: {
-    userProfile: null;
-    auth: {
-      accessToken: string;
-      tokenType: string;
-      refreshToken: string;
-    } | null;
+    channel: YoutubeChannel | null;
   };
 }
 
@@ -73,19 +64,17 @@ export function YoutubeToSpotify({
         Delete cookies
       </button>
       <section className="grid gap-x-8 grid-cols-[600px_auto_600px]">
-        <YoutubeTracks
+        <YoutubePanel
           onCurrentTrack={t => setSpotifySearch(t.q)}
-          auth={youtube.auth}
-          userProfile={youtube.userProfile}
+          channel={youtube.channel}
         />
         <div className="grid place-content-center text-white">
           <ArrowLongRightIcon width={100} height={100} />
         </div>
-        <SpotifyTracks
+        <SpotifyPanel
           search={spotifySearch}
           onFetchedTracks={handleSpotifyTracks}
           userProfile={spotify.userProfile}
-          auth={spotify.auth}
         />
       </section>
     </>

@@ -1,7 +1,7 @@
 "use server";
 
 import axios from "node_modules/axios";
-import { getGoogleAccessFromCookies } from "../auth/google/getGoogleAccessFromCookies";
+import { getGoogleAccessFromCookies } from "../../app/auth/google/getGoogleAccessFromCookies";
 
 // process.env.YOUTUBE_ENDPOINT_PLAYLISTS
 

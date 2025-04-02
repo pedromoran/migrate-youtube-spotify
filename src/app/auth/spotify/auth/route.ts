@@ -1,14 +1,6 @@
 import { NextRequest } from "node_modules/next/server";
 
 export async function GET(req: NextRequest) {
-  // try {
-  //   authUrl = new URL(process.env.NEXT_PUBLIC_ENDPOINT_SPOTIFY_AUTHORIZE || ""); //prettier-ignore
-  // } catch (error) {
-  //   console.log(error, "spotify auth endpoint:", process.env.NEXT_PUBLIC_ENDPOINT_SPOTIFY_AUTHORIZE); //prettier-ignore
-  //   alert("An error occurred while trying to authorize with Spotify.",); //prettier-ignore
-  //   return;
-  // }
-
   const redirect_uri =
     req.nextUrl.origin + process.env.SELF_ENDPOINT_SPOTIFY_CODE!;
 

@@ -10,12 +10,9 @@ interface AccessTokenResponse {
   refresh_token: string;
   scope: string;
 }
-// | {
-//     error: string;
-//     error_description: string;
-//   };
 
 export async function GET(req: NextRequest) {
+  const cookieStore = await cookies();
   const code = req.nextUrl.searchParams.get("code");
   const error = req.nextUrl.searchParams.get("error");
 
@@ -35,22 +32,18 @@ export async function GET(req: NextRequest) {
       redirect_uri: req.nextUrl.origin + req.nextUrl.pathname,
     });
 
-    if (!auth) {
-      return Response.redirect(req.nextUrl.origin);
-    }
+    if (!auth) return Response.redirect(req.nextUrl.origin);
 
-    const redirectUrl = new URL(req.nextUrl.origin);
-
-    req.cookies.set(SpotifyCookieEnum.token_type, auth.token_type);
-    req.cookies.set(
+    cookieStore.set(SpotifyCookieEnum.token_type, auth.token_type);
+    cookieStore.set(
       SpotifyCookieEnum.access_token,
       auth.access_token,
     );
-    req.cookies.set(
+    cookieStore.set(
       SpotifyCookieEnum.refresh_token,
       auth.refresh_token,
     );
-    return Response.redirect(redirectUrl.href);
+    return Response.redirect(req.nextUrl.origin);
   }
 
   return Response.redirect(req.nextUrl.origin);
@@ -67,14 +60,12 @@ async function getAccessToken({
   client_id: string;
   client_secret: string;
 }) {
-  const body = {
-    code,
-    redirect_uri,
-    grant_type: "authorization_code",
-  };
+  const body = new URLSearchParams();
+  body.append("code", code);
+  body.append("redirect_uri", redirect_uri);
+  body.append("grant_type", "authorization_code");
 
   const config: AxiosRequestConfig = {
-    method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
       Authorization:
@@ -87,7 +78,7 @@ async function getAccessToken({
 
   try {
     const { data } = await axios.post<AccessTokenResponse>(
-      "",
+      process.env.SPOTIFY_ENDPOINT_TOKEN || "",
       body,
       config,
     );

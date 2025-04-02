@@ -1,28 +1,18 @@
 "use client";
 import { useState } from "react";
 import { GetTracksResponse } from "src/app/youtube/route";
-import { SpotifyTracks } from "src/components/SpotifyTracks";
+import { SpotifyPanel } from "src/components/SpotifyTracks";
 import { SpotifyTrack } from "src/components/SpotifyTrack";
-import { YoutubeTracks } from "src/components/YoutubeTracks";
+import { YoutubePanel } from "src/components/YoutubePanel";
 import { SpotifyUserProfile } from "src/interfaces/spotify/user-profile";
-import { ArrowLongRightIcon } from "./common/Icons";
+import { YoutubeChannel } from "src/services/youtube/getSelfChannel";
 
 interface SpotifyToYoutubeProps {
   spotify: {
     userProfile: SpotifyUserProfile | null;
-    auth: {
-      accessToken: string;
-      tokenType: string;
-      refreshToken: string;
-    } | null;
   };
   youtube: {
-    userProfile: null;
-    auth: {
-      accessToken: string;
-      tokenType: string;
-      refreshToken: string;
-    } | null;
+    channel: YoutubeChannel | null;
   };
 }
 
@@ -68,16 +58,15 @@ export function SpotifyToYoutube({
 
   return (
     <section className="grid gap-x-8 grid-cols-[600px_600px]">
-      <SpotifyTracks
+      <SpotifyPanel
         search={spotifySearch}
         onFetchedTracks={handleSpotifyTracks}
         userProfile={spotify.userProfile}
-        auth={spotify.auth}
+        // auth={spotify.auth}
       />
-      <YoutubeTracks
+      <YoutubePanel
         onCurrentTrack={t => setSpotifySearch(t.q)}
-        auth={youtube.auth}
-        userProfile={youtube.userProfile}
+        channel={youtube.channel}
       />
     </section>
   );

@@ -8,23 +8,17 @@ import { SpotifyUserProfile } from "src/interfaces/spotify/user-profile";
 import { SpotifySignOutButton } from "./SpotifySignOutButton";
 import { SpotifyCookieEnum } from "src/app/auth/spotify/cookies/interfaces";
 
-interface SpotifyTracksProps {
+interface SpotifyPanelProps {
   search: string | null;
   onFetchedTracks: (tracks: SpotifyTrack[]) => void; //* are used to compare with youtube tracks in the parent component
   userProfile: SpotifyUserProfile | null;
-  auth: {
-    accessToken: string;
-    tokenType: string;
-    refreshToken: string;
-  } | null;
 }
 
-export const SpotifyTracks = ({
+export const SpotifyPanel = ({
   search,
   onFetchedTracks,
   userProfile,
-  auth,
-}: SpotifyTracksProps) => {
+}: SpotifyPanelProps) => {
   const controllerRef = useRef(new AbortController());
   const [tracks, setTracks] = useState<SpotifyTrack[] | null>(null);
   const [isLoadingTracks, setIsLoadingTracks] = useState(false);
@@ -43,38 +37,38 @@ export const SpotifyTracks = ({
     params.append("type", "track");
 
     const signal = controllerRef.current.signal;
-    const authorization = `${auth?.tokenType} ${auth?.accessToken}`;
+    // const authorization = `${auth?.tokenType} ${auth?.accessToken}`;
 
-    if (!authorization) return;
-    try {
-      const data = await fetch(
-        "https://api.spotify.com/v1/search?" + params.toString(),
-        {
-          headers: { authorization },
-          signal,
-        },
-      )
-        .then(async r => {
-          const data = await r.json();
-          if (r.ok) return data;
-          if (data.error.message.includes("auth"))
-            throw new Error("Need to sign into spotify");
-          throw new Error(
-            "An error occurred while fetching spotify tracks",
-          );
-        })
-        .then(r => r);
+    // if (!authorization) return;
+    // try {
+    //   const data = await fetch(
+    //     "https://api.spotify.com/v1/search?" + params.toString(),
+    //     {
+    //       headers: { authorization },
+    //       signal,
+    //     },
+    //   )
+    //     .then(async r => {
+    //       const data = await r.json();
+    //       if (r.ok) return data;
+    //       if (data.error.message.includes("auth"))
+    //         throw new Error("Need to sign into spotify");
+    //       throw new Error(
+    //         "An error occurred while fetching spotify tracks",
+    //       );
+    //     })
+    //     .then(r => r);
 
-      const formattedTracks = formatSpotifyTracks(data);
-      setTracks(formattedTracks);
-      onFetchedTracks(formattedTracks);
-      setIsLoadingTracks(false);
-    } catch (e) {
-      const error = e as { name: string; message: string };
-      if (error.name === "AbortError") return;
-      setIsLoadingTracks(false);
-      // alert(error.message);
-    }
+    //   const formattedTracks = formatSpotifyTracks(data);
+    //   setTracks(formattedTracks);
+    //   onFetchedTracks(formattedTracks);
+    //   setIsLoadingTracks(false);
+    // } catch (e) {
+    //   const error = e as { name: string; message: string };
+    //   if (error.name === "AbortError") return;
+    //   setIsLoadingTracks(false);
+    //   // alert(error.message);
+    // }
   };
 
   return (

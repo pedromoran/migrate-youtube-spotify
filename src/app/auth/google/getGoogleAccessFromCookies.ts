@@ -4,11 +4,19 @@ import { GoogleCookieEnum } from "./cookies";
 
 export async function getGoogleAccessFromCookies() {
   const cookieStore = await cookies();
+  const access_token = cookieStore.get(
+    GoogleCookieEnum.access_token,
+  )?.value;
+  const refresh_token = cookieStore.get(
+    GoogleCookieEnum.refresh_token,
+  )?.value;
+  const token_type = cookieStore.get(
+    GoogleCookieEnum.token_type,
+  )?.value;
   return {
-    access_token: cookieStore.get(GoogleCookieEnum.access_token)
-      ?.value,
-    refresh_token: cookieStore.get(GoogleCookieEnum.refresh_token)
-      ?.value,
-    token_type: cookieStore.get(GoogleCookieEnum.token_type)?.value,
+    access_token,
+    refresh_token,
+    token_type,
+    authorization: `${token_type} ${access_token}`,
   };
 }
