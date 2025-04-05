@@ -8,52 +8,32 @@ export async function getSpotifyUserProfile(): Promise<
   SpotifyUserProfile | null | "unauthorized"
 > {
   const cookieStore = await cookies();
-  const spotifyAccessToken = cookieStore.get(
-    SpotifyCookieEnum.access_token,
-  );
-  const spotifyTokenType = cookieStore.get(
-    SpotifyCookieEnum.token_type,
-  );
+  const auth = {
+    accessToken: cookieStore.get(SpotifyCookieEnum.access_token)
+      ?.value,
+    refreshToken: cookieStore.get(SpotifyCookieEnum.refresh_token)
+      ?.value,
+    tokenType: cookieStore.get(SpotifyCookieEnum.token_type)?.value,
+  };
 
-  //TODO: send refresh token to a client component
-  const spotifyRefreshToken = cookieStore.get(
-    SpotifyCookieEnum.refresh_token,
-  );
-
-  let spotifyAuth = null;
-  if (spotifyAccessToken && spotifyTokenType && spotifyRefreshToken) {
-    spotifyAuth = {
-      accessToken: spotifyAccessToken.value,
-      refreshToken: spotifyRefreshToken.value,
-      tokenType: spotifyTokenType.value,
-    };
-  }
-
-  let spotifyUserProfile = null;
-  if (spotifyAuth) {
-    try {
-      const res = await axios.get(
-        process.env.NEXT_PUBLIC_SPOTIFY_ENDPOINT_SELF_USER_PROFILE ||
-          "",
-        {
-          headers: {
-            Authorization: `${spotifyAuth.tokenType} ${spotifyAuth.accessToken}`,
-          },
+  try {
+    const { data } = await axios.get(
+      process.env.NEXT_PUBLIC_SPOTIFY_ENDPOINT_SELF_USER_PROFILE ||
+        "",
+      {
+        headers: {
+          Authorization: `${auth.tokenType} ${auth.accessToken}`,
         },
-      );
-      spotifyUserProfile = res.data;
-    } catch (error) {
-      const e = error as AxiosError<{
-        error?: {
-          status: number;
-          message: string;
-        };  
-      }>;
-      return "unauthorized";
-    }
-
-    return null;
+      },
+    );
+    return data;
+  } catch (error) {
+    const e = error as AxiosError<{
+      error?: {
+        status: number;
+        message: string;
+      };
+    }>;
+    return "unauthorized";
   }
-
-  return spotifyUserProfile;
 }

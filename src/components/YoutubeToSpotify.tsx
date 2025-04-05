@@ -57,32 +57,7 @@ export function YoutubeToSpotify({
     if (hasMismatch) notifyMismatch();
   };
 
-  return (
-    <>
-      {/* <h1 className="text-lg border-b">
-        Migrate youtube playlist to spotify
-      </h1> */}
 
-      <h1 className="text-lg border-b">
-        Select a youtube playlist to migrate to spotify
-      </h1>
-      <section className="grid gap-x-8 grid-cols-[600px_auto_600px]">
-      {/* <section className="grid gap-x-8 grid-cols-[1200px]"> */}
-        <YoutubePanel
-          onCurrentTrack={t => setSpotifySearch(t.q)}
-          channel={youtube.channel}
-        />
-        <div className="text-white mt-1">
-          <ArrowLongRightIcon width={100} height={100} />
-        </div>
-        <SpotifyPanel
-          search={spotifySearch}
-          onFetchedTracks={handleSpotifyTracks}
-          userProfile={spotify.userProfile}
-        />
-      </section>
-    </>
-  );
 
   // useEffect(() => {
   //   if (!("Notification" in window)) {

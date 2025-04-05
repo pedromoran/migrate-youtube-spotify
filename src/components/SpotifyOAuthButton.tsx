@@ -1,3 +1,4 @@
+"use client";
 import Image from "next/image";
 import React from "react";
 
@@ -5,17 +6,17 @@ export function SpotifyOAuthButton() {
   const goToSpotifyOAuth = async () => {
     window.open(
       process.env.NEXT_PUBLIC_SELF_ENDPOINT_SPOTIFY_AUTH,
-      // "_self",
+      "_self",
     );
   };
 
   return (
     <button
-      className="btn-flex"
+      className="btn"
       onClick={goToSpotifyOAuth}
       aria-label="Button Sign in with Spotify"
     >
-      <span>
+      {/* <span>
         <Image
           src="/spotify.svg"
           priority
@@ -23,7 +24,7 @@ export function SpotifyOAuthButton() {
           width="24"
           height="24"
         />
-      </span>
+      </span> */}
       <span>Sign in</span>
     </button>
   );

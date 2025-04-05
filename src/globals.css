@@ -5,10 +5,6 @@
 }
 
 @layer components {
-  .btn-flex {
-    @apply px-3 py-1.5 font-medium cursor-pointer text-white border outline-sky-600 hover:ring-1 active:outline-4 rounded bg-[#232127] hover:bg-[#2b2a2e] flex space-x-3;
-  }
-
   .btn {
     @apply px-3 py-1.5 font-medium cursor-pointer text-white border outline-sky-600 hover:ring-1 active:outline-4 rounded bg-[#232127] hover:bg-[#2b2a2e];
   }

@@ -1,5 +1,5 @@
+"use client";
 import Script from "next/script";
-import axios from "node_modules/axios";
 import { useRef } from "react";
 import { setGoogleAccessIntoCookies } from "src/app/auth/google/setGoogleAccessIntoCookies";
 import { generateAccessToken } from "src/app/auth/spotify/generateAccessToken";
@@ -178,7 +178,7 @@ export function GoogleOAuthButton() {
         }}
         aria-label="Button Sign in with Google"
       />
-      <button className="btn-flex" onClick={requestGoogleOAuth}>
+      <button className="btn" onClick={requestGoogleOAuth}>
         <span>
           <img src="google.svg" alt="google icon" />
         </span>

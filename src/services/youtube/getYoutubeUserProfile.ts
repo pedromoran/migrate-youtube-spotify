@@ -67,7 +67,7 @@ export interface YoutubeUserProfile {
 }
 
 export async function getYoutubeUserProfile(): Promise<
-  YoutubeUserProfile | null | "unauthorized"
+  YoutubeUserProfile | null | "unauthorized" | "unauthenticated"
 > {
   const { authorization } = await getGoogleAccessFromCookies();
   const url = new URL(process.env.YOUTUBE_ENDPOINT_CHANNELS || "");
@@ -104,6 +104,15 @@ export async function getYoutubeUserProfile(): Promise<
         .includes("permission")
     ) {
       return "unauthorized";
+    }
+
+    if (
+      e.response?.status === 401 &&
+      e.response.data.error.status
+        .toLowerCase()
+        .includes("unauthenticated")
+    ) {
+      return "unauthenticated";
     }
     // console.log(error.response?.data);
     return null;

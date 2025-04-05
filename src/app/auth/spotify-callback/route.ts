@@ -79,17 +79,12 @@ async function getAccessToken({
     },
   };
 
-  try {
-    const { data } = await axios.post<AccessTokenResponse>(
-      process.env.SPOTIFY_ENDPOINT_TOKEN || "",
-      body,
-      config,
-    );
-    return data;
-  } catch (error) {
-    console.log(error);
-    return null;
-  }
+  const { data } = await axios.post<AccessTokenResponse>(
+    process.env.SPOTIFY_ENDPOINT_TOKEN || "",
+    body,
+    config,
+  );
+  return data;
 }
 
 function refreshAccessToken() {

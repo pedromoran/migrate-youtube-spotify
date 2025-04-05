@@ -1,5 +1,5 @@
 "use server";
-import { cookies } from "node_modules/next/headers";
+import { cookies } from "next/headers";
 import { GoogleCookieEnum } from "../app/auth/google/cookies";
 
 export async function getGoogleAccessFromCookies() {
