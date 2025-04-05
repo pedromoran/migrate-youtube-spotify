@@ -1,5 +1,5 @@
 "use server";
-import axios from "node_modules/axios";
+import axios, { AxiosError } from "node_modules/axios";
 import { getGoogleAccessFromCookies } from "../../utils/getGoogleAccessFromCookies";
 
 interface YoutubeChannelResponse {
@@ -66,7 +66,9 @@ export interface YoutubeUserProfile {
   thumbnail: string;
 }
 
-export async function getYoutubeUserProfile(): Promise<YoutubeUserProfile | null> {
+export async function getYoutubeUserProfile(): Promise<
+  YoutubeUserProfile | null | "unauthorized"
+> {
   const { authorization } = await getGoogleAccessFromCookies();
   const url = new URL(process.env.YOUTUBE_ENDPOINT_CHANNELS || "");
 
@@ -90,8 +92,20 @@ export async function getYoutubeUserProfile(): Promise<YoutubeUserProfile | null
         response.data.items[0].snippet.thumbnails.default.url,
     };
   } catch (error) {
+    const e = error as AxiosError<{
+      error: {
+        status: string;
+      };
+    }>;
+    if (
+      e.response?.status === 403 &&
+      e.response.data.error.status
+        .toLowerCase()
+        .includes("permission")
+    ) {
+      return "unauthorized";
+    }
     // console.log(error.response?.data);
-
     return null;
   }
 }

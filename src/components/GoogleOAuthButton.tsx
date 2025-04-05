@@ -2,7 +2,7 @@ import Script from "next/script";
 import axios from "node_modules/axios";
 import { useRef } from "react";
 import { setGoogleAccessIntoCookies } from "src/app/auth/google/setGoogleAccessIntoCookies";
-import { generateAccessToken } from "src/app/auth/spotify/auth/generateAccessToken";
+import { generateAccessToken } from "src/app/auth/spotify/generateAccessToken";
 
 // https://developers.google.com/identity/oauth2/web/reference/js-reference#CodeClientConfig
 interface CodeClientConfig {

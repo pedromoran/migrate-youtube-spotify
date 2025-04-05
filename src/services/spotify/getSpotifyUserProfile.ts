@@ -4,7 +4,9 @@ import { cookies } from "node_modules/next/headers";
 import { SpotifyCookieEnum } from "src/interfaces/spotify-cookies";
 import { SpotifyUserProfile } from "src/interfaces/spotify/user-profile";
 
-export async function getSpotifyUserProfile(): Promise<SpotifyUserProfile | null> {
+export async function getSpotifyUserProfile(): Promise<
+  SpotifyUserProfile | null | "unauthorized"
+> {
   const cookieStore = await cookies();
   const spotifyAccessToken = cookieStore.get(
     SpotifyCookieEnum.access_token,
@@ -45,9 +47,12 @@ export async function getSpotifyUserProfile(): Promise<SpotifyUserProfile | null
         error?: {
           status: number;
           message: string;
-        };
+        };  
       }>;
+      return "unauthorized";
     }
+
+    return null;
   }
 
   return spotifyUserProfile;

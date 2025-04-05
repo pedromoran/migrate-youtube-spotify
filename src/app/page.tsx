@@ -99,7 +99,8 @@ export default async function AppPage() {
             userProfile: spotifyUserProfile,
           }}
           youtube={{
-            channel: youtubeChannel,
+            // channel: youtubeChannel,
+            channel: null,
           }}
         />
       </main>

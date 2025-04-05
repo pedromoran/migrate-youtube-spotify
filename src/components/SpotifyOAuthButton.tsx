@@ -5,7 +5,7 @@ export function SpotifyOAuthButton() {
   const goToSpotifyOAuth = async () => {
     window.open(
       process.env.NEXT_PUBLIC_SELF_ENDPOINT_SPOTIFY_AUTH,
-      "_self",
+      // "_self",
     );
   };
 

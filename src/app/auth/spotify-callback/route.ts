@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
-import { SpotifyCookieEnum } from "../../../../interfaces/spotify-cookies";
 import axios, { AxiosRequestConfig } from "node_modules/axios";
 import { NextRequest } from "node_modules/next/server";
+import { SpotifyCookieEnum } from "src/interfaces/spotify-cookies";
 
 interface AccessTokenResponse {
   access_token: string;
@@ -25,25 +25,28 @@ export async function GET(req: NextRequest) {
 
   //Content-Type application/x-www-form-urlencoded
   if (code) {
-    const auth = await getAccessToken({
-      client_id,
-      client_secret,
-      code,
-      redirect_uri: req.nextUrl.origin + req.nextUrl.pathname,
-    });
-
-    if (!auth) return Response.redirect(req.nextUrl.origin);
-
-    cookieStore.set(SpotifyCookieEnum.token_type, auth.token_type);
-    cookieStore.set(
-      SpotifyCookieEnum.access_token,
-      auth.access_token,
-    );
-    cookieStore.set(
-      SpotifyCookieEnum.refresh_token,
-      auth.refresh_token,
-    );
-    return Response.redirect(req.nextUrl.origin);
+    try {
+      const auth = await getAccessToken({
+        client_id,
+        client_secret,
+        code,
+        redirect_uri: req.nextUrl.origin + req.nextUrl.pathname,
+      });
+      if (!auth) return Response.redirect(req.nextUrl.origin);
+      cookieStore.set(SpotifyCookieEnum.token_type, auth.token_type);
+      cookieStore.set(
+        SpotifyCookieEnum.access_token,
+        auth.access_token,
+      );
+      cookieStore.set(
+        SpotifyCookieEnum.refresh_token,
+        auth.refresh_token,
+      );
+      return Response.redirect(req.nextUrl.origin);
+    } catch (error) {
+      req.nextUrl.searchParams.append("error", "access_denied");
+      return Response.redirect(req.nextUrl.origin);
+    }
   }
 
   return Response.redirect(req.nextUrl.origin);
