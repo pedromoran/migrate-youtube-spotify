@@ -1,6 +1,7 @@
 "use server";
 import axios, { AxiosError } from "node_modules/axios";
 import { getGoogleAccessFromCookies } from "../../utils/getGoogleAccessFromCookies";
+import { cookies } from "node_modules/next/headers";
 
 interface YoutubeChannelResponse {
   kind: string;

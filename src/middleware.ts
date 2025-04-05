@@ -2,13 +2,13 @@ import { NextResponse, NextRequest } from "next/server";
 import { getYoutubeUserProfile } from "./services/youtube/getYoutubeUserProfile";
 import { getSpotifyUserProfile } from "./services/spotify/getSpotifyUserProfile";
 import { cookies } from "next/headers";
+import { SpotifyCookieEnum } from "./interfaces/spotify-cookies";
 
 export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
   if (path.startsWith("/youtube")) return youtubeRoute(request);
-  if (path.startsWith("/spotify")) {
-    return spotifyRoute(request);
-  }
+  if (path.startsWith("/spotify")) return spotifyRoute(request);
+
   return NextResponse.next();
 }
 
@@ -53,8 +53,16 @@ async function spotifyRoute(request: NextRequest) {
   "use server";
   const path = request.nextUrl.pathname;
   const cookieStore = await cookies();
-  const spotifyUserProfile = await getSpotifyUserProfile();
+  const access_token = cookieStore.get(
+    SpotifyCookieEnum.access_token,
+  )?.value;
 
+  const token_type = cookieStore.get(
+    SpotifyCookieEnum.token_type,
+  )?.value;
+  const spotifyUserProfile = await getSpotifyUserProfile(
+    `${token_type} ${access_token}`,
+  );
 
   if (path === "/spotify-access") {
     if (typeof spotifyUserProfile === "string")

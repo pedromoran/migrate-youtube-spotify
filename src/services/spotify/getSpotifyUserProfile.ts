@@ -1,20 +1,12 @@
 "use server";
 import axios, { AxiosError } from "node_modules/axios";
-import { cookies } from "node_modules/next/headers";
-import { SpotifyCookieEnum } from "src/interfaces/spotify-cookies";
 import { SpotifyUserProfile } from "src/interfaces/spotify/user-profile";
+// import { getSpotifyAccessFromCookies } from "src/utils/getSpotifyAccessFromCookies";
 
-export async function getSpotifyUserProfile(): Promise<
-  SpotifyUserProfile | null | "unauthorized"
-> {
-  const cookieStore = await cookies();
-  const auth = {
-    accessToken: cookieStore.get(SpotifyCookieEnum.access_token)
-      ?.value,
-    refreshToken: cookieStore.get(SpotifyCookieEnum.refresh_token)
-      ?.value,
-    tokenType: cookieStore.get(SpotifyCookieEnum.token_type)?.value,
-  };
+export async function getSpotifyUserProfile(
+  authorization: string,
+): Promise<SpotifyUserProfile | null | "unauthorized"> {
+  // const { authorization } = await getSpotifyAccessFromCookies();
 
   try {
     const { data } = await axios.get(
@@ -22,7 +14,7 @@ export async function getSpotifyUserProfile(): Promise<
         "",
       {
         headers: {
-          Authorization: `${auth.tokenType} ${auth.accessToken}`,
+          authorization,
         },
       },
     );
