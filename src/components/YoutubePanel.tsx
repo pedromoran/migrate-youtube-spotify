@@ -8,7 +8,7 @@ import { removeGoogleCookies } from "src/utils/removeGoogleCookies";
 import {
   getPlaylistItems,
   YoutubePlaylistItem,
-} from "src/services/youtube/getTracks";
+} from "src/services/youtube/getPlaylistItems";
 import { LoadingSkeletonTracks } from "./LoadingSkeletonTracks";
 import { useUserProfile } from "src/app/user-profile-provider";
 
@@ -17,6 +17,7 @@ interface YoutubeTracksProps {
   channel: YoutubeUserProfile | null;
   playlistId: string;
   index: number;
+  maxIndex: number;
 }
 
 export const YoutubePanel = ({
@@ -24,6 +25,7 @@ export const YoutubePanel = ({
   channel,
   playlistId,
   index,
+  maxIndex,
 }: YoutubeTracksProps) => {
   const { googleUserProfile } = useUserProfile();
   const [tracks, setTracks] = useState<YoutubePlaylistItem[] | null>(
@@ -34,7 +36,10 @@ export const YoutubePanel = ({
   useEffect(() => {
     (async () => {
       setIsLoading(true);
-      const response = await getPlaylistItems(playlistId);
+      const response = await getPlaylistItems({
+        currentIndex: index,
+        playlistId,
+      });
       setTracks(response);
       setIsLoading(false);
     })();
@@ -63,6 +68,18 @@ export const YoutubePanel = ({
         />
       )}
       {/* {tracks} */}
+      <div className="w-full grid row-end-[auto,_auto] grid-cols-[1fr_auto] gap-x-2 gap-y-1">
+        <p className="col-span-full">Current song</p>
+        <input
+          type="number"
+          value={index + 1}
+          className="w-full"
+          onChange={() => {}}
+          min={0}
+          max={maxIndex}
+        />
+        {/* <button className="btn block">Set</button> */}
+      </div>
       <ul className="pr-4 py-4 self-stretch space-y-5 overflow-y-auto max-h-[600px_]">
         {isLoading && <LoadingSkeletonTracks />}
         {/* {tracks?.prev.map((track: Track) => (
@@ -101,10 +118,11 @@ export const YoutubePanel = ({
             description={""}
             thumbnail={track.thumbnail}
             onNextTrack={() => {}}
+            index={track.index}
             // viewOnly
           />
         ))}
-        {tracks?.slice(index + 1).map(track => (
+        {tracks?.slice(index + 1).map((track, i) => (
           <YoutubeTrack
             key={track.id}
             title={track.title}
@@ -114,6 +132,7 @@ export const YoutubePanel = ({
             description={track.description}
             thumbnail={track.thumbnail}
             onMoveToTrack={() => {}}
+            index={track.index}
           />
         ))}
       </ul>

@@ -6,7 +6,11 @@
 
 @layer components {
   .btn {
-    @apply px-3 py-1.5 font-medium cursor-pointer text-white border outline-sky-600 hover:ring-1 active:outline-4 rounded bg-[#232127] hover:bg-[#2b2a2e] flex space-x-3;
+    @apply px-3 py-1.5 font-medium cursor-pointer text-white border border-gray-500 outline-sky-600 hover:ring-1 active:outline-4 rounded bg-[#232127] hover:bg-[#2b2a2e] flex space-x-3;
+  }
+
+  input {
+    @apply py-2 rounded border border-neutral-700 bg-neutral-800 px-3 ring-0 hover:border-gray-500;
   }
 }
 

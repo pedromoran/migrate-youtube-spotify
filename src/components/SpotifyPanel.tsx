@@ -178,10 +178,13 @@ export const SpotifyPanel = ({
         )}
         {/* {userProfile && (
         )} */}
-        <SearchInput
-          defaultValue={youtubeSearch ?? ""}
-          onValueChange={v => fetchSpotifyTracks(v)}
-        />
+        <div className="w-full grid row-end-[auto,_auto] grid-cols-[1fr_auto] gap-x-2 gap-y-1">
+          <p className="col-span-full">Search</p>
+          <SearchInput
+            defaultValue={youtubeSearch ?? ""}
+            onValueChange={v => fetchSpotifyTracks(v)}
+          />
+        </div>
       </header>
       <ul className="pr-4 py-4 self-stretch space-y-5 overflow-y-auto max-h-[600px]">
         {isLoadingTracks && <LoadingSkeletonTracks />}
