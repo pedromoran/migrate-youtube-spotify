@@ -13,6 +13,7 @@ interface TrackProps {
   thumbnail: string;
   viewOnly?: boolean;
   isPrev?: boolean;
+  description: string;
   onNextTrack?: () => void;
   onMoveToTrack?: () => void;
 }
@@ -25,6 +26,7 @@ export const YoutubeTrack = ({
   title,
   viewOnly,
   isPrev,
+  description,
   onNextTrack,
   onMoveToTrack,
 }: TrackProps) => {
@@ -48,7 +50,13 @@ export const YoutubeTrack = ({
         { "is-previous-track bg-[#18181870]": isPrev },
       )}
     >
-      <img src={thumbnail} alt="track thumbnail" />
+      <div className="w-[100px] h-[100px] rounded overflow-hidden">
+        <img
+          src={thumbnail}
+          alt="track thumbnail"
+          className="w-full h-full object-cover scale-[1.33]"
+        />
+      </div>
       {/* <Image src={thumbnail} alt="track thumbnail" width={120} height={120} /> */}
       <div>
         <h3 className="text-xl font-extrabold group-[.is-previous-track]:opacity-50">
@@ -85,6 +93,7 @@ export const YoutubeTrack = ({
             </>
           )}
         </div>
+        <p>{description}</p>
         <p className="hidden">{q}</p>
       </div>
     </div>

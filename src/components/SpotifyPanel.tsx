@@ -11,17 +11,22 @@ import { ProfileInfo } from "./common/ProfileInfo";
 import { removeSpotifyCookies } from "src/utils/removeSpotifyCookies";
 import { getGoogleAccessFromCookies } from "src/utils/getGoogleAccessFromCookies";
 import { getSpotifyAccessFromCookies } from "src/utils/getSpotifyAccessFromCookies";
+import axios from "node_modules/axios";
 
 interface SpotifyPanelProps {
-  search: string | null;
+  youtubeSearch: string | null;
   onFetchedTracks: (tracks: SpotifyTrack[]) => void; //* are used to compare with youtube tracks in the parent component
+  onNewTrackAdded: () => void;
   userProfile: SpotifyUserProfile | null;
+  playlistId?: string;
 }
 
 export const SpotifyPanel = ({
-  search,
+  youtubeSearch,
   onFetchedTracks,
+  onNewTrackAdded,
   userProfile,
+  playlistId,
 }: SpotifyPanelProps) => {
   const controllerRef = useRef(new AbortController());
   const [tracks, setTracks] = useState<SpotifyTrack[] | null>(null);
@@ -77,6 +82,67 @@ export const SpotifyPanel = ({
     }
   };
 
+  // https://api.spotify.com/v1/playlists/{playlist_id}/tracks
+  // POST
+  // /playlists/{playlist_id}/tracks
+  // playlist_id
+  // string
+  // Required
+  // The Spotify ID of the playlist.
+
+  // Example: 3cEYpjA9oz9GiPac4AsH4n
+  // position
+  // integer
+  // The position to insert the items, a zero-based index. For example, to insert the items in the first position: position=0; to insert the items in the third position: position=2. If omitted, the items will be appended to the playlist. Items are added in the order they are listed in the query string or request body.
+
+  // Example: position=0
+  // uris
+  // string
+  // A comma-separated list of Spotify URIs to add, can be track or episode URIs. For example:
+  // uris=spotify:track:4iV5W9uYEdYUVa79Axb7Rh, spotify:track:1301WleyT98MSxVHPZCA6M, spotify:episode:512ojhOuo1ktJprKbVcKyQ
+  // A maximum of 100 items can be added in one request.
+  // Note: it is likely that passing a large number of item URIs as a query parameter will exceed the maximum length of the request URI. When adding a large number of items, it is recommended to pass them in the request body, see below.
+
+  // Example: uris=spotify%3Atrack%3A4iV5W9uYEdYUVa79Axb7Rh,spotify%3Atrack%3A1301WleyT98MSxVHPZCA6M
+
+  // Body application/json
+  // supports free form additional properties
+  // uris
+  // array of strings
+  // A JSON array of the Spotify URIs to add. For example: {"uris": ["spotify:track:4iV5W9uYEdYUVa79Axb7Rh","spotify:track:1301WleyT98MSxVHPZCA6M", "spotify:episode:512ojhOuo1ktJprKbVcKyQ"]}
+  // A maximum of 100 items can be added in one request. Note: if the uris parameter is present in the query string, any URIs listed here in the body will be ignored.
+
+  // position
+  // integer
+  // The position to insert the items, a zero-based index. For example, to insert the items in the first position: position=0 ; to insert the items in the third position: position=2. If omitted, the items will be appended to the playlist. Items are added in the order they appear in the uris array. For example: {"uris": ["spotify:track:4iV5W9uYEdYUVa79Axb7Rh","spotify:track:1301WleyT98MSxVHPZCA6M"], "position": 3}
+  const addTrackToSpotifyPlaylist = async (
+    playlistId: string,
+    track: SpotifyTrack,
+  ) => {
+    const { authorization } = await getSpotifyAccessFromCookies();
+    if (!authorization) return;
+    const params = new URLSearchParams();
+    params.append("uris", `spotify:track:${track.id}`);
+    params.append("position", "0");
+    try {
+      await axios.post(
+        `https://api.spotify.com/v1/playlists/${playlistId}/tracks?${params.toString()}`,
+        {
+          method: "POST",
+          headers: {
+            authorization,
+            "Content-Type": "application/json",
+          },
+        },
+      );
+      onNewTrackAdded();
+    } catch (e) {
+      const error = e as { name: string; message: string };
+      if (error.name === "AbortError") return;
+      // alert(error.message);
+    }
+  };
+
   return (
     <section className="space-y-5">
       <header className="flex flex-col items-center space-y-5">
@@ -88,54 +154,32 @@ export const SpotifyPanel = ({
           width="120"
           height="120"
         />
-        {userProfile ? (
-          // <section className="flex mx-auto space-x-5">
-          //   <div className="w-[80px] h-[80px]">
-          //     {userProfile.images[0] ? (
-          //       <img
-          //         src={userProfile.images[0]?.url}
-          //         className="rounded-full w-full h-full object-cover"
-          //         alt="spotify user profile image"
-          //       />
-          //     ) : (
-          //       <span className="grid place-content-center w-full h-full rounded-full text-4xl font-extrabold bg-sky-700 text-white">
-          //         {userProfile.display_name[0]}
-          //       </span>
-          //     )}
-          //   </div>
-          //   <div className="flex-grow flex justify-between items-start">
-          //     <div>
-          //       <p>Profile</p>
-          //       <h2 className="text-2xl font-extrabold">
-          //         {userProfile.display_name}
-          //       </h2>
-          //     </div>
-          //     <SpotifySignOutButton />
-          //   </div>
-          // </section>
+        {userProfile && (
           <ProfileInfo
             image={userProfile.images[0]?.url}
             title={userProfile.display_name}
             onClickSignOut={() => removeSpotifyCookies()}
           />
-        ) : (
-          <SpotifyOAuthButton />
         )}
-        {userProfile && (
-          <SearchInput
-            defaultValue={search ?? ""}
-            onValueChange={v => fetchSpotifyTracks(v)}
-          />
-        )}
+        {/* {userProfile && (
+        )} */}
+        <SearchInput
+          defaultValue={youtubeSearch ?? ""}
+          onValueChange={v => fetchSpotifyTracks(v)}
+        />
       </header>
-      {userProfile && (
-        <ul className="pr-4 py-4 self-stretch space-y-5 overflow-y-auto max-h-[600px]">
-          {isLoadingTracks && <Skeleton />}
-          {tracks?.map(track => (
-            <SpotifyTrack key={track.link} track={track} />
-          ))}
-        </ul>
-      )}
+      <ul className="pr-4 py-4 self-stretch space-y-5 overflow-y-auto max-h-[600px]">
+        {isLoadingTracks && <Skeleton />}
+        {tracks?.map(track => (
+          <SpotifyTrack
+            key={track.link}
+            track={track}
+            onClickAddToPlaylist={(track: SpotifyTrack) =>
+              addTrackToSpotifyPlaylist(playlistId ?? "", track)
+            }
+          />
+        ))}
+      </ul>
     </section>
   );
 };
@@ -173,7 +217,8 @@ function formatSpotifyTracks(
   const { tracks } = payload;
   const { items } = tracks;
   const formattedTracks = items.map(track => {
-    const { album, artists, name, explicit, external_urls } = track;
+    const { album, artists, name, explicit, external_urls, id } =
+      track;
     const artist = artists.map(artist => artist.name).join(", ");
     const t: SpotifyTrack = {
       artist,
@@ -182,6 +227,7 @@ function formatSpotifyTracks(
       explicit,
       thumbnail: album.images[1].url,
       link: external_urls.spotify,
+      id,
     };
     return t;
   });

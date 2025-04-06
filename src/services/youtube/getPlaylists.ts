@@ -154,6 +154,8 @@ export async function getPlaylists(): Promise<
     const p = new URLSearchParams();
     p.append("part", "contentDetails,id,snippet");
     p.append("mine", "true");
+    p.append("maxResults", "50");
+
     const { data } = await axios.get(
       process.env.YOUTUBE_ENDPOINT_PLAYLISTS! + "?" + p.toString(),
       {

@@ -3,7 +3,6 @@ import { useState } from "react";
 import { GetTracksResponse } from "src/app/youtube/route";
 import { SpotifyPanel } from "src/components/SpotifyPanel";
 import { SpotifyTrack } from "src/components/SpotifyTrack";
-import { YoutubePanel } from "src/components/YoutubePanel";
 import { SpotifyUserProfile } from "src/interfaces/spotify/user-profile";
 import { ArrowLongRightIcon } from "./common/Icons";
 import { removeSpotifyCookies } from "src/utils/removeSpotifyCookies";
@@ -56,8 +55,6 @@ export function YoutubeToSpotify({
 
     if (hasMismatch) notifyMismatch();
   };
-
-
 
   // useEffect(() => {
   //   if (!("Notification" in window)) {

@@ -3,7 +3,6 @@ import { useState } from "react";
 import { GetTracksResponse } from "src/app/youtube/route";
 import { SpotifyPanel } from "src/components/SpotifyPanel";
 import { SpotifyTrack } from "src/components/SpotifyTrack";
-import { YoutubePanel } from "src/components/YoutubePanel";
 import { SpotifyUserProfile } from "src/interfaces/spotify/user-profile";
 import { YoutubeUserProfile } from "src/services/youtube/getYoutubeUserProfile";
 
@@ -59,15 +58,15 @@ export function SpotifyToYoutube({
   return (
     <section className="grid gap-x-8 grid-cols-[600px_600px]">
       <SpotifyPanel
-        search={spotifySearch}
+        youtubeSearch={spotifySearch}
         onFetchedTracks={handleSpotifyTracks}
         userProfile={spotify.userProfile}
         // auth={spotify.auth}
       />
-      <YoutubePanel
+      {/* <YoutubePanel
         onCurrentTrack={t => setSpotifySearch(t.q)}
         channel={youtube.channel}
-      />
+      /> */}
     </section>
   );
 }

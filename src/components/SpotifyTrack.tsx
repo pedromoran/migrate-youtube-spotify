@@ -5,18 +5,26 @@ export interface SpotifyTrack {
   explicit: boolean;
   thumbnail: string;
   link: string;
+  id: string;
 }
 
 interface TrackProps {
   track: SpotifyTrack;
+  onClickAddToPlaylist: (track: SpotifyTrack) => void;
 }
 
 export const SpotifyTrack = ({
-  track: { thumbnail, album, artist, title, explicit, link },
+  track,
+  onClickAddToPlaylist,
 }: TrackProps) => {
+  const { artist, title, album, explicit, thumbnail, link } = track;
   return (
     <div className="grid grid-cols-[100px_auto] gap-8 rounded-md shadow p-5 bg-[#232127] space-x-5">
-      <img src={thumbnail} alt="track thumbnail" />
+      <img
+        className="rounded"
+        src={thumbnail}
+        alt="track thumbnail"
+      />
       {/* <Image src={thumbnail} alt="track thumbnail" width={120} height={120} /> */}
       <div>
         <header className="flex items-center justify-between">
@@ -35,7 +43,7 @@ export const SpotifyTrack = ({
           <strong>{artist}</strong> &deg;{album}
         </p>
         <button
-          // onClick={() => {}}
+          onClick={() => onClickAddToPlaylist(track)}
           className="mt-2 cursor-pointer text-black active:outline-4 outline-sky-600 ml-auto block bg-[#1ed760] hover:brightness-115 rounded w-max px-3 py-1.5"
         >
           Add to playlist
