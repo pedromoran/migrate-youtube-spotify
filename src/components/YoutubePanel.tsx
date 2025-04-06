@@ -2,11 +2,6 @@
 import { useEffect, useState } from "react";
 import { YoutubeTrack } from "./YoutubeTrack";
 import Image from "next/image";
-import { SpotifyTrack } from "./SpotifyTrack";
-import { GetTracksResponse, Track } from "src/app/youtube/route";
-import { GoogleOAuthButton } from "./GoogleOAuthButton";
-import { getYoutubeTracksIndex } from "src/app/youtube/tracks-index";
-import axios from "node_modules/axios";
 import { YoutubeUserProfile } from "src/services/youtube/getYoutubeUserProfile";
 import { ProfileInfo } from "./common/ProfileInfo";
 import { removeGoogleCookies } from "src/utils/removeGoogleCookies";
@@ -14,6 +9,7 @@ import {
   getPlaylistItems,
   YoutubePlaylistItem,
 } from "src/services/youtube/getTracks";
+import { LoadingSkeletonTracks } from "./LoadingSkeletonTracks";
 
 interface YoutubeTracksProps {
   onCurrentTrackMetadata: (metadata: string) => void;
@@ -30,11 +26,14 @@ export const YoutubePanel = ({
     null,
   );
   const [index, setIndex] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     (async () => {
+      setIsLoading(true);
       const response = await getPlaylistItems(playlistId);
       setTracks(response);
+      setIsLoading(false);
     })();
   }, []);
 
@@ -62,6 +61,7 @@ export const YoutubePanel = ({
       )}
       {/* {tracks} */}
       <ul className="pr-4 py-4 self-stretch space-y-5 overflow-y-auto max-h-[600px_]">
+        {isLoading && <LoadingSkeletonTracks />}
         {/* {tracks?.prev.map((track: Track) => (
             <YoutubeTrack
               key={track.q}
