@@ -1,10 +1,14 @@
 "use client";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { SpotifyPanel } from "src/components/SpotifyPanel";
 import { SpotifyPlaylists } from "src/components/SpotifyPlaylists";
 import { YoutubePanel } from "src/components/YoutubePanel";
 import { YoutubePlaylists } from "src/components/YoutubePlaylists";
+import {
+  getYoutubeTracksIndex,
+  incrementYoutubeTracksIndex,
+} from "../youtube/tracks-index";
 
 export default function YoutubeToSpotifyPage() {
   const { push } = useRouter();
@@ -14,6 +18,23 @@ export default function YoutubeToSpotifyPage() {
   const [youtubeSearch, setYoutubeSearch] = useState<string | null>(
     null,
   );
+  const [index, setIndex] = useState<number | null>(null);
+
+  const handleNewSpotifyTrackAdded = async () => {
+    try {
+      await incrementYoutubeTracksIndex();
+      setIndex(i => (i ? i + 1 : null));
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    (async () => {
+      const i = await getYoutubeTracksIndex();
+      if (i) setIndex(i);
+    })();
+  }, []);
 
   return (
     <div className="min-h-screen">
@@ -48,19 +69,20 @@ export default function YoutubeToSpotifyPage() {
           />
         )}
 
-        {youtubePlaylistId && spotifyPlaylistId && (
+        {youtubePlaylistId && spotifyPlaylistId && index && (
           <section className="grid grid-cols-[repeat(2,_600px)] gap-x-8">
             <YoutubePanel
               channel={null}
               onCurrentTrackMetadata={s => setYoutubeSearch(s)}
               playlistId={youtubePlaylistId}
+              index={index}
             />
             <SpotifyPanel
               key={youtubeSearch}
               onFetchedTracks={() => {}}
               youtubeSearch={youtubeSearch}
               userProfile={null}
-              onNewTrackAdded={() => {}}
+              onNewTrackAdded={handleNewSpotifyTrackAdded}
               playlistId={spotifyPlaylistId}
             />
           </section>

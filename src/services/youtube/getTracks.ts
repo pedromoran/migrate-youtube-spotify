@@ -22,7 +22,7 @@ interface Item {
 interface Snippet {
   publishedAt: string;
   channelId: string;
-  title: string;
+  title: string | "Deleted video";
   description: string;
   thumbnails: Thumbnails;
   channelTitle: string;
@@ -34,11 +34,11 @@ interface Snippet {
 }
 
 interface Thumbnails {
-  default: Default;
-  medium: Medium;
-  high: High;
-  standard: Standard;
-  maxres: Maxres;
+  default?: Default;
+  medium?: Medium;
+  high?: High;
+  standard?: Standard;
+  maxres?: Maxres;
 }
 
 interface Default {
@@ -112,46 +112,51 @@ function extractMetadata(title: string, description: string) {
     album: "",
     artist: "",
   };
-  metadata.artist = parts?.[1].trim() || "";
-  metadata.album = parts?.[2].trim() || "";
+  metadata.artist = parts?.[1]?.trim() || "";
+  metadata.album = parts?.[2]?.trim() || "";
   return metadata;
 }
 
 function formatYoutubePlaylistItems(
   params: PlaylistItemsResponse["items"],
 ): YoutubePlaylistItem[] {
-  return params.map(p => {
-    const { album, artist } = extractMetadata(
-      p.snippet.title,
-      p.snippet.description,
-    );
+  return params
+    .filter(p => p.snippet.title.toLowerCase() !== "deleted video")
+    .map(p => {
+      const { album, artist } = extractMetadata(
+        p.snippet.title,
+        p.snippet.description,
+      );
 
-    return {
-      id: p.id,
-      title: p.snippet.title,
-      description: p.snippet.description,
-      thumbnail: p.snippet.thumbnails.high.url,
-      album,
-      artist,
-    };
-  });
+      return {
+        id: p.id,
+        title: p.snippet.title
+          .replace(/\([^)]*[Vv][Ii][Dd][Ee][Oo][^)]*\)/g, "")
+          .replace(/\([^)]*[Aa][Uu][Dd][Ii][Oo][^)]*\)/g, ""),
+        description: p.snippet.description,
+        thumbnail: p.snippet.thumbnails.high?.url || "",
+        album,
+        artist,
+      };
+    });
 }
 
 export async function getPlaylistItems(
   playlistId: string,
-  // order = "newest_first" | "oldest_first",
-  order = "oldest_first",
+  order: "newest_first" | "oldest_first" = "newest_first",
 ): Promise<YoutubePlaylistItem[] | null> {
   const access = await getGoogleAccessFromCookies();
   const playlists: YoutubePlaylistItem[] = [];
-  let c = 1;
-  async function recursive() {
+  let totalResults: number | null = null;
+  let page = 1;
+
+  async function recursive(pageToken?: string) {
     try {
-      console.log(c);
       const p = new URLSearchParams();
       p.append("part", "contentDetails,id,snippet");
       p.append("playlistId", playlistId);
-      p.append("maxResults", "20");
+      p.append("maxResults", "50");
+      if (pageToken) p.append("pageToken", pageToken);
 
       const res = await axios.get<PlaylistItemsResponse>(
         "https://www.googleapis.com/youtube/v3/playlistItems?" +
@@ -163,39 +168,52 @@ export async function getPlaylistItems(
         },
       );
 
-      if (!res?.data?.items?.length || c >= 10) return;
-
       playlists.push(...formatYoutubePlaylistItems(res.data.items));
-      c += 1;
-      recursive();
+      if (totalResults && playlists.length >= totalResults) return;
+      if (totalResults === null)
+        totalResults = res.data.pageInfo.totalResults;
+
+      page++;
+      await recursive(res.data.nextPageToken);
     } catch (error) {
+      if (
+        pageToken &&
+        //@ts-expect-error: non-typed
+        error.response?.data?.error?.message
+          ?.toLowerCase()
+          .includes("page")
+      ) {
+        return;
+      }
+      console.log(error);
       return null;
     }
   }
 
   if (!access) return null;
-  // try {
-  //   const p = new URLSearchParams();
-  //   p.append("part", "contentDetails,id,snippet");
-  //   p.append("playlistId", playlistId);
-  //   p.append("maxResults", "20");
+  if (order === "oldest_first") {
+    await recursive();
+    return playlists.reverse();
+  }
 
-  //   const { data } = await axios.get<PlaylistItemsResponse>(
-  //     "https://www.googleapis.com/youtube/v3/playlistItems?" +
-  //       p.toString(),
-  //     {
-  //       headers: {
-  //         Authorization: `${access.token_type} ${access.access_token}`,
-  //       },
-  //     },
-  //   );
+  try {
+    const p = new URLSearchParams();
+    p.append("part", "contentDetails,id,snippet");
+    p.append("playlistId", playlistId);
+    p.append("maxResults", "20");
 
-  //   console.log(data);
+    const { data } = await axios.get<PlaylistItemsResponse>(
+      "https://www.googleapis.com/youtube/v3/playlistItems?" +
+        p.toString(),
+      {
+        headers: {
+          Authorization: `${access.token_type} ${access.access_token}`,
+        },
+      },
+    );
 
-  //   return formatYoutubePlaylistItems(data.items);
-  // } catch (error) {
-  //   return null;
-  // }
-  recursive();
-  return playlists;
+    return formatYoutubePlaylistItems(data.items);
+  } catch (error) {
+    return null;
+  }
 }

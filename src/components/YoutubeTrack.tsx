@@ -1,6 +1,7 @@
 "use client";
 
 import classNames from "classnames";
+import Image from "next/image";
 
 // import fs from "fs";
 // import songsPosition from "@/app/api/data/yt-tracks-position.json";
@@ -51,10 +52,18 @@ export const YoutubeTrack = ({
       )}
     >
       <div className="w-[100px] h-[100px] rounded overflow-hidden">
-        <img
+        {/* <img
           src={thumbnail}
           alt="track thumbnail"
           className="w-full h-full object-cover scale-[1.33]"
+        /> */}
+        <Image
+          src={thumbnail}
+          alt="track thumbnail"
+          className="w-full h-full object-cover scale-[1.33]"
+          width={480}
+          height={360}
+          loading="lazy"
         />
       </div>
       {/* <Image src={thumbnail} alt="track thumbnail" width={120} height={120} /> */}
@@ -93,7 +102,7 @@ export const YoutubeTrack = ({
             </>
           )}
         </div>
-        <p>{description}</p>
+        {/* <p>{description}</p> */}
         <p className="hidden">{q}</p>
       </div>
     </div>

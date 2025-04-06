@@ -1,7 +1,8 @@
 "use server";
 import fs from "fs";
 const YOUTUBE_INDEX_PATH =
-  import.meta.url.split("/").slice(-1) + "yt-tracks.json";
+  "/home/pm/migrate-youtube-spotify/src/app/youtube/tracks-position.json";
+// import.meta.url.split("/").slice(-1) + "yt-tracks.json";
 
 export async function getYoutubeTracksIndex() {
   let p = null;

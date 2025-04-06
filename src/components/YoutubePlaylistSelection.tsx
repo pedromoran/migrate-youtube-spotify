@@ -1,6 +1,5 @@
 "use client";
 import { useEffect, useState } from "react";
-import { YoutubeTrack } from "./YoutubeTrack";
 import Image from "next/image";
 import { SpotifyTrack } from "./SpotifyTrack";
 import { GetTracksResponse, Track } from "src/app/youtube/route";

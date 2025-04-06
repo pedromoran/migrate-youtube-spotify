@@ -17,6 +17,7 @@ export async function setGoogleAccessIntoCookies({
 }) {
   const cookieStore = await cookies();
   cookieStore.set(GoogleCookieEnum.access_token, access_token);
-  cookieStore.set(GoogleCookieEnum.refresh_token, refresh_token);
+  if (refresh_token)
+    cookieStore.set(GoogleCookieEnum.refresh_token, refresh_token);
   cookieStore.set(GoogleCookieEnum.token_type, token_type);
 }

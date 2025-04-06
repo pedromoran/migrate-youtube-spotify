@@ -15,17 +15,18 @@ interface YoutubeTracksProps {
   onCurrentTrackMetadata: (metadata: string) => void;
   channel: YoutubeUserProfile | null;
   playlistId: string;
+  index: number;
 }
 
 export const YoutubePanel = ({
   onCurrentTrackMetadata,
   channel,
   playlistId,
+  index,
 }: YoutubeTracksProps) => {
   const [tracks, setTracks] = useState<YoutubePlaylistItem[] | null>(
     null,
   );
-  const [index, setIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -108,7 +109,7 @@ export const YoutubePanel = ({
             artist={track.artist}
             album={track.album}
             q={"track.q"}
-            description={""}
+            description={track.description}
             thumbnail={track.thumbnail}
             onMoveToTrack={() => {}}
           />

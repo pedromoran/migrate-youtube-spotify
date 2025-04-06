@@ -4,15 +4,11 @@ import { SpotifyTrack } from "./SpotifyTrack";
 import { SearchResponse } from "../interfaces/spotify/search-response";
 import Image from "node_modules/next/image";
 import { SearchInput } from "./SearchInput";
-import { SpotifyOAuthButton } from "./SpotifyOAuthButton";
 import { SpotifyUserProfile } from "src/interfaces/spotify/user-profile";
-import { SpotifySignOutButton } from "./SpotifySignOutButton";
 import { SpotifyCookieEnum } from "src/interfaces/spotify-cookies";
 import { ProfileInfo } from "./common/ProfileInfo";
 import { removeSpotifyCookies } from "src/utils/removeSpotifyCookies";
-import { getGoogleAccessFromCookies } from "src/utils/getGoogleAccessFromCookies";
 import { getSpotifyAccessFromCookies } from "src/utils/getSpotifyAccessFromCookies";
-import axios from "node_modules/axios";
 import { LoadingSkeletonTracks } from "./LoadingSkeletonTracks";
 
 interface SpotifyPanelProps {
@@ -35,6 +31,47 @@ export const SpotifyPanel = ({
   const [isLoadingTracks, setIsLoadingTracks] = useState(false);
   const [isAddingTrackToPlaylist, setIsAddingTrackToPlaylist] =
     useState(false);
+
+  const addTrackToSpotifyPlaylist = async (
+    playlistId: string,
+    track: SpotifyTrack,
+  ) => {
+    setIsAddingTrackToPlaylist(true);
+    const { authorization } = await getSpotifyAccessFromCookies();
+    if (!authorization) return;
+    const params = new URLSearchParams();
+    params.append("uris", `spotify:track:${track.id}`);
+    params.append("position", "0");
+
+    try {
+      await fetch(
+        `${
+          process.env.NEXT_PUBLIC_SPOTIFY_ENDPOINT_PLAYLISTS
+        }/${playlistId}/tracks?${params.toString()}`,
+        {
+          method: "post",
+          headers: { authorization },
+        },
+      )
+        .then(async r => {
+          const data = await r.json();
+          if (r.ok) return data;
+          if (data.error.message.includes("auth"))
+            throw new Error("Need to sign into spotify");
+          throw new Error(
+            "An error occurred while fetching spotify tracks",
+          );
+        })
+        .then(r => r);
+      onNewTrackAdded();
+    } catch (e) {
+      const error = e as { name: string; message: string };
+      if (error.name === "AbortError") return;
+      // alert(error.message);
+    } finally {
+      setIsAddingTrackToPlaylist(false);
+    }
+  };
 
   const fetchSpotifyTracks = async (search: string) => {
     if (search === "") {
@@ -77,6 +114,31 @@ export const SpotifyPanel = ({
       const formattedTracks = formatSpotifyTracks(data);
       setTracks(formattedTracks);
       onFetchedTracks(formattedTracks);
+      const artists = formattedTracks[0].artist.split(", ");
+      let firstExplicit = false;
+      let hasElseWithExplicit = false;
+      formattedTracks.forEach((t, i) => {
+        if (i === 0) {
+          firstExplicit = t.explicit;
+        } else if (t.explicit) {
+          hasElseWithExplicit = true;
+        }
+      });
+
+      if (!firstExplicit && hasElseWithExplicit) {
+        alert("check explicit");
+      }
+
+      // if (
+      //   search.includes(formattedTracks[0].title) &&
+      //   artists.every(a => search.includes(a))
+      // ) {
+      //   alert("perfect match");
+      //   addTrackToSpotifyPlaylist(
+      //     playlistId ?? "",
+      //     formattedTracks[0],
+      //   );
+      // }
       setIsLoadingTracks(false);
     } catch (e) {
       const error = e as { name: string; message: string };
@@ -95,46 +157,6 @@ export const SpotifyPanel = ({
   //   ],
   //   "position": 0
   // }'
-  const addTrackToSpotifyPlaylist = async (
-    playlistId: string,
-    track: SpotifyTrack,
-  ) => {
-    setIsAddingTrackToPlaylist(true);
-    const { authorization } = await getSpotifyAccessFromCookies();
-    if (!authorization) return;
-    const params = new URLSearchParams();
-    params.append("uris", `spotify:track:${track.id}`);
-    params.append("position", "0");
-
-    try {
-      await fetch(
-        `${
-          process.env.NEXT_PUBLIC_SPOTIFY_ENDPOINT_PLAYLISTS
-        }/${playlistId}/tracks?${params.toString()}`,
-        {
-          method: "post",
-          headers: { authorization },
-        },
-      )
-        .then(async r => {
-          const data = await r.json();
-          if (r.ok) return data;
-          if (data.error.message.includes("auth"))
-            throw new Error("Need to sign into spotify");
-          throw new Error(
-            "An error occurred while fetching spotify tracks",
-          );
-        })
-        .then(r => r);
-      onNewTrackAdded();
-    } catch (e) {
-      const error = e as { name: string; message: string };
-      if (error.name === "AbortError") return;
-      // alert(error.message);
-    } finally {
-      setIsAddingTrackToPlaylist(false);
-    }
-  };
 
   return (
     <section className="space-y-5">
