@@ -1,3 +1,4 @@
+"use client";
 import { useRef, useState } from "react";
 import { SpotifyTrack } from "./SpotifyTrack";
 import { SearchResponse } from "../interfaces/spotify/search-response";
@@ -32,6 +33,8 @@ export const SpotifyPanel = ({
   const controllerRef = useRef(new AbortController());
   const [tracks, setTracks] = useState<SpotifyTrack[] | null>(null);
   const [isLoadingTracks, setIsLoadingTracks] = useState(false);
+  const [isAddingTrackToPlaylist, setIsAddingTrackToPlaylist] =
+    useState(false);
 
   const fetchSpotifyTracks = async (search: string) => {
     if (search === "") {
@@ -82,65 +85,54 @@ export const SpotifyPanel = ({
       // alert(error.message);
     }
   };
-
-  // https://api.spotify.com/v1/playlists/{playlist_id}/tracks
-  // POST
-  // /playlists/{playlist_id}/tracks
-  // playlist_id
-  // string
-  // Required
-  // The Spotify ID of the playlist.
-
-  // Example: 3cEYpjA9oz9GiPac4AsH4n
-  // position
-  // integer
-  // The position to insert the items, a zero-based index. For example, to insert the items in the first position: position=0; to insert the items in the third position: position=2. If omitted, the items will be appended to the playlist. Items are added in the order they are listed in the query string or request body.
-
-  // Example: position=0
-  // uris
-  // string
-  // A comma-separated list of Spotify URIs to add, can be track or episode URIs. For example:
-  // uris=spotify:track:4iV5W9uYEdYUVa79Axb7Rh, spotify:track:1301WleyT98MSxVHPZCA6M, spotify:episode:512ojhOuo1ktJprKbVcKyQ
-  // A maximum of 100 items can be added in one request.
-  // Note: it is likely that passing a large number of item URIs as a query parameter will exceed the maximum length of the request URI. When adding a large number of items, it is recommended to pass them in the request body, see below.
-
-  // Example: uris=spotify%3Atrack%3A4iV5W9uYEdYUVa79Axb7Rh,spotify%3Atrack%3A1301WleyT98MSxVHPZCA6M
-
-  // Body application/json
-  // supports free form additional properties
-  // uris
-  // array of strings
-  // A JSON array of the Spotify URIs to add. For example: {"uris": ["spotify:track:4iV5W9uYEdYUVa79Axb7Rh","spotify:track:1301WleyT98MSxVHPZCA6M", "spotify:episode:512ojhOuo1ktJprKbVcKyQ"]}
-  // A maximum of 100 items can be added in one request. Note: if the uris parameter is present in the query string, any URIs listed here in the body will be ignored.
-
-  // position
-  // integer
-  // The position to insert the items, a zero-based index. For example, to insert the items in the first position: position=0 ; to insert the items in the third position: position=2. If omitted, the items will be appended to the playlist. Items are added in the order they appear in the uris array. For example: {"uris": ["spotify:track:4iV5W9uYEdYUVa79Axb7Rh","spotify:track:1301WleyT98MSxVHPZCA6M"], "position": 3}
+  // curl --request POST \
+  // --url 'https://api.spotify.com/v1/playlists/546pGyqcbtR0aiOPlIHIN8/tracks?position=0&uris=spotify%3Atrack%3A0eO2zq5fjPt41BreFmiIKw' \
+  // --header 'Authorization: Bearer 1POdFZRZbvb...qqillRxMr2z' \
+  // --header 'Content-Type: application/json' \
+  // --data '{
+  //   "uris": [
+  //       "string"
+  //   ],
+  //   "position": 0
+  // }'
   const addTrackToSpotifyPlaylist = async (
     playlistId: string,
     track: SpotifyTrack,
   ) => {
+    setIsAddingTrackToPlaylist(true);
     const { authorization } = await getSpotifyAccessFromCookies();
     if (!authorization) return;
     const params = new URLSearchParams();
     params.append("uris", `spotify:track:${track.id}`);
     params.append("position", "0");
+
     try {
-      await axios.post(
-        `https://api.spotify.com/v1/playlists/${playlistId}/tracks?${params.toString()}`,
+      await fetch(
+        `${
+          process.env.NEXT_PUBLIC_SPOTIFY_ENDPOINT_PLAYLISTS
+        }/${playlistId}/tracks?${params.toString()}`,
         {
-          method: "POST",
-          headers: {
-            authorization,
-            "Content-Type": "application/json",
-          },
+          method: "post",
+          headers: { authorization },
         },
-      );
+      )
+        .then(async r => {
+          const data = await r.json();
+          if (r.ok) return data;
+          if (data.error.message.includes("auth"))
+            throw new Error("Need to sign into spotify");
+          throw new Error(
+            "An error occurred while fetching spotify tracks",
+          );
+        })
+        .then(r => r);
       onNewTrackAdded();
     } catch (e) {
       const error = e as { name: string; message: string };
       if (error.name === "AbortError") return;
       // alert(error.message);
+    } finally {
+      setIsAddingTrackToPlaylist(false);
     }
   };
 
@@ -175,6 +167,7 @@ export const SpotifyPanel = ({
           <SpotifyTrack
             key={track.link}
             track={track}
+            isAddingTrackToPlaylist={isAddingTrackToPlaylist}
             onClickAddToPlaylist={(track: SpotifyTrack) =>
               addTrackToSpotifyPlaylist(playlistId ?? "", track)
             }

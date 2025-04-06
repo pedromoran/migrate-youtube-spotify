@@ -12,7 +12,7 @@ export async function setGoogleAccessIntoCookies({
   // expires_in: string;
   // scope: string;
   access_token: string;
-  refresh_token: string;
+  refresh_token?: string;
   token_type: string;
 }) {
   const cookieStore = await cookies();

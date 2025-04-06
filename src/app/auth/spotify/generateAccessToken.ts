@@ -54,8 +54,6 @@ export async function generateAccessToken({
       return response.json();
     });
 
-    console.log({ data });
-
     return data as AccessTokenResponse;
   } catch (error) {
     console.log(error);

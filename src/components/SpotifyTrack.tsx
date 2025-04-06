@@ -1,3 +1,5 @@
+import classNames from "classnames";
+
 export interface SpotifyTrack {
   artist: string;
   title: string;
@@ -11,15 +13,22 @@ export interface SpotifyTrack {
 interface TrackProps {
   track: SpotifyTrack;
   onClickAddToPlaylist: (track: SpotifyTrack) => void;
+  isAddingTrackToPlaylist: boolean;
 }
 
 export const SpotifyTrack = ({
   track,
   onClickAddToPlaylist,
+  isAddingTrackToPlaylist,
 }: TrackProps) => {
   const { artist, title, album, explicit, thumbnail, link } = track;
   return (
-    <div className="grid grid-cols-[100px_auto] gap-8 rounded-md shadow p-5 bg-[#232127] space-x-5">
+    <div
+      className={classNames(
+        "grid grid-cols-[100px_auto] gap-8 rounded-md shadow p-5 bg-[#232127] space-x-5",
+        { "opacity-50": isAddingTrackToPlaylist },
+      )}
+    >
       <img
         className="rounded"
         src={thumbnail}
@@ -43,8 +52,15 @@ export const SpotifyTrack = ({
           <strong>{artist}</strong> &deg;{album}
         </p>
         <button
+          disabled={isAddingTrackToPlaylist}
           onClick={() => onClickAddToPlaylist(track)}
-          className="mt-2 cursor-pointer text-black active:outline-4 outline-sky-600 ml-auto block bg-[#1ed760] hover:brightness-115 rounded w-max px-3 py-1.5"
+          className={classNames(
+            "mt-2 cursor-pointer text-black outline-sky-600 ml-auto block bg-[#1ed760] rounded w-max px-3 py-1.5",
+            {
+              "active:outline-4 hover:brightness-115":
+                !isAddingTrackToPlaylist,
+            },
+          )}
         >
           Add to playlist
         </button>

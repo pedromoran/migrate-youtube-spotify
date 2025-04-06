@@ -139,26 +139,63 @@ function formatYoutubePlaylistItems(
 
 export async function getPlaylistItems(
   playlistId: string,
+  // order = "newest_first" | "oldest_first",
+  order = "oldest_first",
 ): Promise<YoutubePlaylistItem[] | null> {
   const access = await getGoogleAccessFromCookies();
-  if (!access) return null;
-  try {
-    const p = new URLSearchParams();
-    p.append("part", "contentDetails,id,snippet");
-    p.append("playlistId", playlistId);
-    p.append("maxResults", "20");
+  const playlists: YoutubePlaylistItem[] = [];
+  let c = 1;
+  async function recursive() {
+    try {
+      console.log(c);
+      const p = new URLSearchParams();
+      p.append("part", "contentDetails,id,snippet");
+      p.append("playlistId", playlistId);
+      p.append("maxResults", "20");
 
-    const { data } = await axios.get<PlaylistItemsResponse>(
-      "https://www.googleapis.com/youtube/v3/playlistItems?" +
-        p.toString(),
-      {
-        headers: {
-          Authorization: `${access.token_type} ${access.access_token}`,
+      const res = await axios.get<PlaylistItemsResponse>(
+        "https://www.googleapis.com/youtube/v3/playlistItems?" +
+          p.toString(),
+        {
+          headers: {
+            Authorization: `${access.token_type} ${access.access_token}`,
+          },
         },
-      },
-    );
-    return formatYoutubePlaylistItems(data.items);
-  } catch (error) {
-    return null;
+      );
+
+      if (!res?.data?.items?.length || c >= 10) return;
+
+      playlists.push(...formatYoutubePlaylistItems(res.data.items));
+      c += 1;
+      recursive();
+    } catch (error) {
+      return null;
+    }
   }
+
+  if (!access) return null;
+  // try {
+  //   const p = new URLSearchParams();
+  //   p.append("part", "contentDetails,id,snippet");
+  //   p.append("playlistId", playlistId);
+  //   p.append("maxResults", "20");
+
+  //   const { data } = await axios.get<PlaylistItemsResponse>(
+  //     "https://www.googleapis.com/youtube/v3/playlistItems?" +
+  //       p.toString(),
+  //     {
+  //       headers: {
+  //         Authorization: `${access.token_type} ${access.access_token}`,
+  //       },
+  //     },
+  //   );
+
+  //   console.log(data);
+
+  //   return formatYoutubePlaylistItems(data.items);
+  // } catch (error) {
+  //   return null;
+  // }
+  recursive();
+  return playlists;
 }
