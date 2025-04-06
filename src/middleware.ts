@@ -1,5 +1,5 @@
 import { NextResponse, NextRequest } from "next/server";
-import { getYoutubeUserProfile } from "./services/youtube/getYoutubeUserProfile";
+import { getGoogleUserProfile } from "./services/youtube/getGoogleUserProfile";
 import { getSpotifyUserProfile } from "./services/spotify/getSpotifyUserProfile";
 import { cookies } from "next/headers";
 import { SpotifyCookieEnum } from "./interfaces/spotify-cookies";
@@ -25,7 +25,7 @@ async function youtubeRoute(request: NextRequest) {
   "use server";
   const path = request.nextUrl.pathname;
   const cookieStore = await cookies();
-  const youtubeUserProfile = await getYoutubeUserProfile();
+  const youtubeUserProfile = await getGoogleUserProfile();
   const access_token = cookieStore.get(
     SpotifyCookieEnum.access_token,
   )?.value;

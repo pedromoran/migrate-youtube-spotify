@@ -68,7 +68,7 @@ export interface YoutubeUserProfile {
   thumbnail: string;
 }
 
-export async function getYoutubeUserProfile(): Promise<
+export async function getGoogleUserProfile(): Promise<
   YoutubeUserProfile | null | "unauthorized" | "unauthenticated"
 > {
   const { authorization, refresh_token } =
@@ -121,7 +121,7 @@ export async function getYoutubeUserProfile(): Promise<
           access_token: auth.access_token,
           token_type: auth.token_type,
         });
-        return await getYoutubeUserProfile();
+        return await getGoogleUserProfile();
       }
       return "unauthorized";
     }

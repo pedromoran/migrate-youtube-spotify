@@ -3,6 +3,10 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { cookies } from "node_modules/next/headers";
 import "src/globals.css";
 import { GoogleCookieEnum } from "./auth/google/cookies";
+import { UserProfileProvider } from "./user-profile-provider";
+import { getGoogleUserProfile } from "src/services/youtube/getGoogleUserProfile";
+import { getSpotifyUserProfile } from "src/services/spotify/getSpotifyUserProfile";
+import { getSpotifyAccessFromCookies } from "src/utils/getSpotifyAccessFromCookies";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,18 +34,21 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // const cookieStore = await cookies();
-  // const youtubeAccessToken = cookieStore.get(
-  //   GoogleCookieEnum.access_token,
-  // );
-  // console.log(youtubeAccessToken);
+  const { authorization } = await getSpotifyAccessFromCookies();
+  const gle = await getGoogleUserProfile();
+  const sfy = await getSpotifyUserProfile(authorization);
 
   return (
     <html lang="en">
       <body
         className={`${geistSans.className} ${geistMono.className} antialiased bg-[#151419] text-white`}
       >
-        {children}
+        <UserProfileProvider
+          googleUserProfile={typeof gle === "object" ? gle : null}
+          spotifyUserProfile={typeof sfy === "object" ? sfy : null}
+        >
+          {children}
+        </UserProfileProvider>
       </body>
     </html>
   );

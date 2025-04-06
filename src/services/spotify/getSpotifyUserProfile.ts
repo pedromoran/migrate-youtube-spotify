@@ -6,8 +6,6 @@ import { SpotifyUserProfile } from "src/interfaces/spotify/user-profile";
 export async function getSpotifyUserProfile(
   authorization: string,
 ): Promise<SpotifyUserProfile | null | "unauthorized"> {
-  // const { authorization } = await getSpotifyAccessFromCookies();
-
   try {
     const { data } = await axios.get(
       process.env.NEXT_PUBLIC_SPOTIFY_ENDPOINT_SELF_USER_PROFILE ||

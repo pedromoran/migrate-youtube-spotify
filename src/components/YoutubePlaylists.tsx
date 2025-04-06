@@ -4,7 +4,7 @@ import {
   getPlaylists,
   YoutubePlaylist,
 } from "src/services/youtube/getPlaylists";
-import { YoutubeUserProfile } from "src/services/youtube/getYoutubeUserProfile";
+import { YoutubeUserProfile } from "src/services/youtube/getGoogleUserProfile";
 import { ProfileInfo } from "./common/ProfileInfo";
 import { removeGoogleCookies } from "src/utils/removeGoogleCookies";
 

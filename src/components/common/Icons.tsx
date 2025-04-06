@@ -1,4 +1,4 @@
-import { SVGAttributes } from "node_modules/@types/react";
+import { SVGAttributes } from "react";
 
 export const ArrowLongRightIcon = (
   props: SVGAttributes<SVGSVGElement>,

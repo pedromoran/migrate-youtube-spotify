@@ -10,12 +10,12 @@ import { ProfileInfo } from "./common/ProfileInfo";
 import { removeSpotifyCookies } from "src/utils/removeSpotifyCookies";
 import { getSpotifyAccessFromCookies } from "src/utils/getSpotifyAccessFromCookies";
 import { LoadingSkeletonTracks } from "./LoadingSkeletonTracks";
+import { useUserProfile } from "src/app/user-profile-provider";
 
 interface SpotifyPanelProps {
   youtubeSearch: string | null;
   onFetchedTracks: (tracks: SpotifyTrack[]) => void; //* are used to compare with youtube tracks in the parent component
   onNewTrackAdded: () => void;
-  userProfile: SpotifyUserProfile | null;
   playlistId?: string;
 }
 
@@ -23,9 +23,9 @@ export const SpotifyPanel = ({
   youtubeSearch,
   onFetchedTracks,
   onNewTrackAdded,
-  userProfile,
   playlistId,
 }: SpotifyPanelProps) => {
+  const { spotifyUserProfile } = useUserProfile();
   const controllerRef = useRef(new AbortController());
   const [tracks, setTracks] = useState<SpotifyTrack[] | null>(null);
   const [isLoadingTracks, setIsLoadingTracks] = useState(false);
@@ -169,10 +169,10 @@ export const SpotifyPanel = ({
           width="120"
           height="120"
         />
-        {userProfile && (
+        {spotifyUserProfile && (
           <ProfileInfo
-            image={userProfile.images[0]?.url}
-            title={userProfile.display_name}
+            image={spotifyUserProfile.images[0]?.url}
+            title={spotifyUserProfile.display_name}
             onClickSignOut={() => removeSpotifyCookies()}
           />
         )}

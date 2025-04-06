@@ -4,7 +4,7 @@ import { GetTracksResponse } from "src/app/youtube/route";
 import { SpotifyPanel } from "src/components/SpotifyPanel";
 import { SpotifyTrack } from "src/components/SpotifyTrack";
 import { SpotifyUserProfile } from "src/interfaces/spotify/user-profile";
-import { YoutubeUserProfile } from "src/services/youtube/getYoutubeUserProfile";
+import { YoutubeUserProfile } from "src/services/youtube/getGoogleUserProfile";
 
 interface SpotifyToYoutubeProps {
   spotify: {

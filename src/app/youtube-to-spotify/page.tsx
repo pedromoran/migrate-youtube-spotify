@@ -81,7 +81,6 @@ export default function YoutubeToSpotifyPage() {
               key={youtubeSearch}
               onFetchedTracks={() => {}}
               youtubeSearch={youtubeSearch}
-              userProfile={null}
               onNewTrackAdded={handleNewSpotifyTrackAdded}
               playlistId={spotifyPlaylistId}
             />

@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { YoutubeTrack } from "./YoutubeTrack";
 import Image from "next/image";
-import { YoutubeUserProfile } from "src/services/youtube/getYoutubeUserProfile";
+import { YoutubeUserProfile } from "src/services/youtube/getGoogleUserProfile";
 import { ProfileInfo } from "./common/ProfileInfo";
 import { removeGoogleCookies } from "src/utils/removeGoogleCookies";
 import {
@@ -10,6 +10,7 @@ import {
   YoutubePlaylistItem,
 } from "src/services/youtube/getTracks";
 import { LoadingSkeletonTracks } from "./LoadingSkeletonTracks";
+import { useUserProfile } from "src/app/user-profile-provider";
 
 interface YoutubeTracksProps {
   onCurrentTrackMetadata: (metadata: string) => void;
@@ -24,6 +25,7 @@ export const YoutubePanel = ({
   playlistId,
   index,
 }: YoutubeTracksProps) => {
+  const { googleUserProfile } = useUserProfile();
   const [tracks, setTracks] = useState<YoutubePlaylistItem[] | null>(
     null,
   );
@@ -53,10 +55,10 @@ export const YoutubePanel = ({
         width={120}
         height={120}
       />
-      {channel && (
+      {googleUserProfile && (
         <ProfileInfo
-          image={channel.thumbnail}
-          title={channel.title}
+          image={googleUserProfile.thumbnail}
+          title={googleUserProfile.title}
           onClickSignOut={() => removeGoogleCookies()}
         />
       )}
