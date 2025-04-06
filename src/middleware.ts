@@ -26,17 +26,32 @@ async function youtubeRoute(request: NextRequest) {
   const path = request.nextUrl.pathname;
   const cookieStore = await cookies();
   const youtubeUserProfile = await getYoutubeUserProfile();
+  const access_token = cookieStore.get(
+    SpotifyCookieEnum.access_token,
+  )?.value;
+  const token_type = cookieStore.get(
+    SpotifyCookieEnum.token_type,
+  )?.value;
+  const spotifyUserProfile = await getSpotifyUserProfile(
+    `${token_type} ${access_token}`,
+  );
 
   if (path === "/youtube-access") {
     if (typeof youtubeUserProfile === "string")
       return NextResponse.next();
-    if (typeof youtubeUserProfile === "object")
+    if (typeof youtubeUserProfile === "object") {
+      if (typeof spotifyUserProfile === "string")
+        return NextResponse.redirect(
+          new URL("/spotify-access", request.url),
+        );
+
       return NextResponse.redirect(
         new URL(
           cookieStore.get("prev_url_path")?.value || "/",
-          request.nextUrl.origin,
+          request.url,
         ),
       );
+    }
   }
 
   if (typeof youtubeUserProfile === "string") {
@@ -45,6 +60,11 @@ async function youtubeRoute(request: NextRequest) {
       new URL("/youtube-access", request.url),
     );
   }
+
+  if (typeof spotifyUserProfile === "string")
+    return NextResponse.redirect(
+      new URL("/spotify-access", request.url),
+    );
 
   return NextResponse.next();
 }
@@ -56,7 +76,6 @@ async function spotifyRoute(request: NextRequest) {
   const access_token = cookieStore.get(
     SpotifyCookieEnum.access_token,
   )?.value;
-
   const token_type = cookieStore.get(
     SpotifyCookieEnum.token_type,
   )?.value;
@@ -71,7 +90,7 @@ async function spotifyRoute(request: NextRequest) {
       return NextResponse.redirect(
         new URL(
           cookieStore.get("prev_url_path")?.value || "/",
-          request.nextUrl.origin,
+          request.url,
         ),
       );
   }

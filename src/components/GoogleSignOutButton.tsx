@@ -1,6 +1,6 @@
 import axios from "axios";
 
-export const YoutubeSignOutButton = () => {
+export const GoogleSignOutButton = () => {
   const handleSignOut = async () => {
     try {
       await axios.delete(window.origin + "/auth/spotify/cookies");

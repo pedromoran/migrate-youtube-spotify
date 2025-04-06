@@ -1,3 +1,4 @@
+"use server";
 interface AccessTokenResponse {
   access_token: string;
   expires_in: number;
@@ -47,13 +48,17 @@ export async function generateAccessToken({
       requestOptions,
     ).then(response => {
       if (!response.ok) {
+        console.log("error", response);
         throw new Error("Network response was not ok");
       }
       return response.json();
     });
 
+    console.log({ data });
+
     return data as AccessTokenResponse;
   } catch (error) {
+    console.log(error);
     return null;
   }
 }

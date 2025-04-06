@@ -152,11 +152,12 @@ export function GoogleOAuthButton() {
           redirectUri: window.origin,
         });
         if (access) {
-          setGoogleAccessIntoCookies({
+          await setGoogleAccessIntoCookies({
             access_token: access.access_token,
             refresh_token: access.refresh_token,
             token_type: access.token_type,
           });
+          window.location.reload();
         } else {
           console.log("Error getting access token");
           return;
