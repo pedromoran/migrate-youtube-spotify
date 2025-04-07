@@ -37,10 +37,14 @@ export const SpotifyPanel = ({
   const [isAddingTrackToPlaylist, setIsAddingTrackToPlaylist] =
     useState(false);
 
-  const notifyMismatch = () => {
+  const notifyMismatch = (alertMs?: string) => {
     if (Notification.permission === "granted") {
       new Notification("There is a mismatch! 🙂");
       new Audio("notification.wav").play();
+      if (alertMs)
+        setTimeout(() => {
+          alert(alertMs);
+        }, 1000);
       return;
     }
   };
@@ -123,11 +127,19 @@ export const SpotifyPanel = ({
     });
 
     if (!firstExplicit && hasElseWithExplicit) {
-      notifyMismatch();
-      alert("check explicit");
+      notifyMismatch("check explicit");
       setIsLoadingTracks(false);
       return;
     }
+
+    console.log({
+      title: search
+        .toLowerCase()
+        .includes(tracks[0].title.toLowerCase()),
+      artists: artists.every(a =>
+        search.toLowerCase().includes(a.toLowerCase()),
+      ),
+    });
 
     if (
       search.toLowerCase().includes(tracks[0].title.toLowerCase()) &&
@@ -136,7 +148,7 @@ export const SpotifyPanel = ({
       )
     ) {
       // alert("perfect match");
-      await addTrackToSpotifyPlaylist(playlistId ?? "", tracks[0]);
+      // await addTrackToSpotifyPlaylist(playlistId ?? "", tracks[0]);
     } else {
       notifyMismatch();
     }
@@ -279,7 +291,10 @@ function formatSpotifyTracks(
     const artist = artists.map(artist => artist.name).join(", ");
     const t: SpotifyTrack = {
       artist,
-      title: name,
+      title: name
+        .replace(/\([\s\S]*\)/g, "")
+        .replace(/\[[\s\S]*\]/g, "")
+        .trim(),
       album: album.name,
       explicit,
       thumbnail: album.images[1].url,

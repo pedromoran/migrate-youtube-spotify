@@ -39,9 +39,15 @@ export const YoutubePanel = ({
       position,
       playlistId,
     });
-    const t = response?.[(position % response.length) - 1];
-    if (t)
-      onCurrentTrackMetadata(`${t.title} ${t.artist} ${t.album}`);
+    if (!response) {
+      setIsLoading(false);
+      return;
+    }
+    const currTrack = response.find(t => t.position === position);
+    if (currTrack)
+      onCurrentTrackMetadata(
+        `${currTrack.title} ${currTrack.artist} ${currTrack.album}`,
+      );
     setIsLoading(false);
     setTracks(response);
   }
@@ -60,7 +66,7 @@ export const YoutubePanel = ({
     ) {
       fetchTracks(position, playlistId);
     } else {
-      const t = tracks[(position % tracks.length) - 1];
+      const t = tracks.find(t => t.position === position);
       if (t)
         onCurrentTrackMetadata(`${t.title} ${t.artist} ${t.album}`);
     }

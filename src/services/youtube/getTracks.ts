@@ -22,7 +22,7 @@ interface Item {
 interface Snippet {
   publishedAt: string;
   channelId: string;
-  title: string | "Deleted video";
+  title: string | "Deleted video" | "Private video";
   description: string;
   thumbnails: Thumbnails;
   channelTitle: string;
@@ -123,7 +123,11 @@ function formatYoutubePlaylistItems(
   params: PlaylistItemsResponse["items"],
 ): YoutubePlaylistItem[] {
   return params
-    .filter(p => p.snippet.title.toLowerCase() !== "deleted video")
+    .filter(
+      p =>
+        p.snippet.title.toLowerCase() !== "deleted video" &&
+        p.snippet.title.toLowerCase() !== "private video",
+    )
     .map((p, i) => {
       const { album, artist } = extractMetadata(
         p.snippet.title,
@@ -135,8 +139,12 @@ function formatYoutubePlaylistItems(
         title: p.snippet.title
           .replace(/\([^)]*[Vv][Ii][Dd][Ee][Oo][^)]*\)/g, "")
           .replace(/\[[^)]*[Vv][Ii][Dd][Ee][Oo][^)]*\]/g, "")
-          .replace(/(?<=[(\s])[Ff][Tt]\.?(?=[)\s])/g, "")
-          .replace(/\([^)]*[Aa][Uu][Dd][Ii][Oo][^)]*\)/g, ""),
+          .replace(/\([^)]*[Ll][Yy][Rr][Ii][Cc][Ss]?[^)]*\)/g, "")
+          .replace(/\[[^)]*[Ll][Yy][Rr][Ii][Cc][Ss]?[^)]*\]/g, "")
+          .replace(/(?<=[(\s])[Ff][Tt]\.(?=[)\s])|:/g, "")
+          .replace(/\([^)]*[Aa][Uu][Dd][Ii][Oo][^)]*\)/g, "")
+          .replace(/\[[^)]*[Aa][Uu][Dd][Ii][Oo][^)]*\]/g, "")
+          .trim(),
         description: p.snippet.description,
         thumbnail: p.snippet.thumbnails.high?.url || "",
         album,
