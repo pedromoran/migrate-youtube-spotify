@@ -120,25 +120,36 @@ export const SpotifyPanel = ({
       formattedTracks.forEach((t, i) => {
         if (i === 0) {
           firstExplicit = t.explicit;
-        } else if (t.explicit) {
+        } else if (
+          t.explicit &&
+          search.toLowerCase().includes(t.title.toLowerCase())
+        ) {
           hasElseWithExplicit = true;
         }
       });
 
       if (!firstExplicit && hasElseWithExplicit) {
-        // alert("check explicit");
+        alert("check explicit");
+        setIsLoadingTracks(false);
+        return;
       }
 
-      // if (
-      //   search.includes(formattedTracks[0].title) &&
-      //   artists.every(a => search.includes(a))
-      // ) {
-      //   alert("perfect match");
-      //   addTrackToSpotifyPlaylist(
-      //     playlistId ?? "",
-      //     formattedTracks[0],
-      //   );
-      // }
+      if (
+        search
+          .toLowerCase()
+          .includes(formattedTracks[0].title.toLowerCase()) &&
+        artists.every(a =>
+          search.toLowerCase().includes(a.toLowerCase()),
+        )
+      ) {
+        alert("perfect match");
+        // addTrackToSpotifyPlaylist(
+        //   playlistId ?? "",
+        //   formattedTracks[0],
+        // );
+      } else {
+        // TODO: notify
+      }
       setIsLoadingTracks(false);
     } catch (e) {
       const error = e as { name: string; message: string };
