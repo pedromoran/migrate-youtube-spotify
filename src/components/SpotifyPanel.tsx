@@ -148,7 +148,7 @@ export const SpotifyPanel = ({
       )
     ) {
       // alert("perfect match");
-      // await addTrackToSpotifyPlaylist(playlistId ?? "", tracks[0]);
+      await addTrackToSpotifyPlaylist(playlistId ?? "", tracks[0]);
     } else {
       notifyMismatch();
     }
