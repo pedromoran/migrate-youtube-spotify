@@ -5,7 +5,10 @@ import { SpotifyPanel } from "src/components/SpotifyPanel";
 import { SpotifyPlaylists } from "src/components/SpotifyPlaylists";
 import { YoutubePanel } from "src/components/YoutubePanel";
 import { YoutubePlaylists } from "src/components/YoutubePlaylists";
-import { getYoutubeTracksIndex } from "../youtube/tracks-index";
+import {
+  getYoutubeTracksIndex,
+  updateYoutubeTracksPosition,
+} from "../youtube/tracks-index";
 
 export default function YoutubeToSpotifyPage() {
   const { push } = useRouter();
@@ -18,29 +21,21 @@ export default function YoutubeToSpotifyPage() {
   const [youtubeTracksPosition, setYoutubeTracksPosition] = useState<
     number | null
   >(null);
-  const [
-    defaultYoutubeTracksPosition,
-    setDefaultYoutubeTracksPosition,
-  ] = useState<number | null>(null);
-
-  const handleNewYoutubeTracksPostion = async (p: number) => {
+  const handleNewYoutubeTracksPosition = async (p: number) => {
     try {
       setYoutubeTracksPosition(p);
-      // await handleNewYoutubeTracksPostion(p);
+      await updateYoutubeTracksPosition(p);
     } catch (error) {
       console.log(error);
     }
   };
 
-  // useEffect(() => {
-  //   (async () => {
-  //     const i = await getYoutubeTracksIndex();
-  //     if (i) {
-  //       setYoutubeTracksPosition(i);
-  //       setDefaultYoutubeTracksPosition(i);
-  //     }
-  //   })();
-  // }, []);
+  useEffect(() => {
+    (async () => {
+      const i = await getYoutubeTracksIndex();
+      if (i) setYoutubeTracksPosition(i);
+    })();
+  }, []);
 
   return (
     <div className="min-h-screen">
@@ -57,10 +52,6 @@ export default function YoutubeToSpotifyPage() {
           <YoutubePlaylists
             channel={null}
             onSelectPlaylist={(playlistId: string) => {
-              // setPlaylist({
-              //   ...playlist,
-              //   youtubePlaylistId: playlistId,
-              // });
               push(`${window.location.pathname}?yt=${playlistId}`);
             }}
           />
@@ -75,25 +66,29 @@ export default function YoutubeToSpotifyPage() {
           />
         )}
 
-        {youtubePlaylistId && spotifyPlaylistId && (
-          <section className="grid grid-cols-[repeat(2,_600px)] gap-x-8">
-            <YoutubePanel
-              onCurrentTrackMetadata={s => setYoutubeSearch(s)}
-              playlistId={youtubePlaylistId}
-            />
-            {/* <SpotifyPanel
+        {youtubePlaylistId &&
+          spotifyPlaylistId &&
+          youtubeTracksPosition && (
+            <section className="grid grid-cols-[repeat(2,_600px)] gap-x-8">
+              <YoutubePanel
+                onCurrentTrackMetadata={s => setYoutubeSearch(s)}
+                playlistId={youtubePlaylistId}
+                onPositionChange={handleNewYoutubeTracksPosition}
+                position={youtubeTracksPosition}
+              />
+              <SpotifyPanel
                 key={youtubeSearch}
                 onFetchedTracks={() => {}}
                 youtubeSearch={youtubeSearch}
                 onNewTrackAdded={() =>
-                  handleNewYoutubeTracksPostion(
+                  handleNewYoutubeTracksPosition(
                     youtubeTracksPosition + 1,
                   )
                 }
                 playlistId={spotifyPlaylistId}
-              /> */}
-          </section>
-        )}
+              />
+            </section>
+          )}
       </main>
     </div>
   );

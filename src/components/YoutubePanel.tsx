@@ -20,13 +20,16 @@ import {
 interface YoutubeTracksProps {
   onCurrentTrackMetadata: (metadata: string) => void;
   playlistId: string;
+  position: number;
+  onPositionChange: (position: number) => void;
 }
 
 export const YoutubePanel = ({
   onCurrentTrackMetadata,
   playlistId,
+  onPositionChange,
+  position,
 }: YoutubeTracksProps) => {
-  const [position, setPosition] = useState<number | null>(null);
   const { googleUserProfile } = useUserProfile();
   const [tracks, setTracks] = useState<YoutubePlaylistItem[] | null>(
     null,
@@ -40,7 +43,7 @@ export const YoutubePanel = ({
       position,
       playlistId,
     });
-    const t = response?.[0];
+    const t = response?.[position - 1];
     if (t)
       onCurrentTrackMetadata(`${t.title} ${t.artist} ${t.album}`);
     setIsLoading(false);
@@ -61,15 +64,6 @@ export const YoutubePanel = ({
     )
       fetchTracks(position, playlistId);
   }, [position]);
-
-  useEffect(() => {
-    (async () => {
-      const i = await getYoutubeTracksIndex();
-      if (i) setPosition(i);
-    })();
-  }, []);
-
-  console.log(tracks);
 
   return (
     <section className="flex flex-col items-center space-y-5">
@@ -93,7 +87,7 @@ export const YoutubePanel = ({
           <p className="col-span-full">Current song</p>
           <NumberInput
             onValueChange={async v => {
-              setPosition(v);
+              onPositionChange(v);
               await updateYoutubeTracksPosition(v);
             }}
             min={1}
@@ -117,7 +111,9 @@ export const YoutubePanel = ({
                 q={"track.q"}
                 description={track.description}
                 thumbnail={track.thumbnail}
-                onNextTrack={() => setPosition(track.position + 1)}
+                onNextTrack={() =>
+                  onPositionChange(track.position + 1)
+                }
                 index={track.position}
               />
             ))}
