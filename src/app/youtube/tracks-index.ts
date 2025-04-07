@@ -16,25 +16,24 @@ export async function getYoutubeTracksIndex() {
   return p;
 }
 
-export async function incrementYoutubeTracksIndex() {
+export async function incrementYoutubeTracksPosition() {
   const i = await getYoutubeTracksIndex();
   if (i === null) return;
-  const newIndex = i + 1;
-  fs.writeFileSync(YOUTUBE_INDEX_PATH, newIndex.toString(), "utf-8");
-  return newIndex;
+  fs.writeFileSync(YOUTUBE_INDEX_PATH, i.toString(), "utf-8");
+  return i;
 }
 
-export async function decrementYoutubeTracksIndex() {
+export async function decrementYoutubeTracksPosition() {
   const i = await getYoutubeTracksIndex();
   if (i === null) return;
-  if (i === 0) return i;
+  if (i === 1) return i;
   const newIndex = i - 1;
   fs.writeFileSync(YOUTUBE_INDEX_PATH, newIndex.toString(), "utf-8");
   return newIndex;
 }
 
-export async function updateYoutubeTracksIndex(i: number) {
-  if (i < 0) throw new Error("Index cannot be negative");
+export async function updateYoutubeTracksPosition(i: number) {
+  if (i < 1) throw new Error("Position cannot be less than 1");
   fs.writeFileSync(YOUTUBE_INDEX_PATH, i.toString(), "utf-8");
   return i;
 }

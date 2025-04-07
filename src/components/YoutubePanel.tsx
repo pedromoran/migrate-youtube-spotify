@@ -2,54 +2,74 @@
 import { useEffect, useState } from "react";
 import { YoutubeTrack } from "./YoutubeTrack";
 import Image from "next/image";
-import { YoutubeUserProfile } from "src/services/youtube/getGoogleUserProfile";
 import { ProfileInfo } from "./common/ProfileInfo";
 import { removeGoogleCookies } from "src/utils/removeGoogleCookies";
+
+import { LoadingSkeletonTracks } from "./LoadingSkeletonTracks";
+import { useUserProfile } from "src/app/user-profile-provider";
 import {
   getPlaylistItems,
   YoutubePlaylistItem,
-} from "src/services/youtube/getPlaylistItems";
-import { LoadingSkeletonTracks } from "./LoadingSkeletonTracks";
-import { useUserProfile } from "src/app/user-profile-provider";
+} from "src/services/youtube/getTracks";
+import { NumberInput } from "./NumberInput";
+import {
+  getYoutubeTracksIndex,
+  updateYoutubeTracksPosition,
+} from "src/app/youtube/tracks-index";
 
 interface YoutubeTracksProps {
   onCurrentTrackMetadata: (metadata: string) => void;
-  channel: YoutubeUserProfile | null;
   playlistId: string;
-  index: number;
-  maxIndex: number;
 }
 
 export const YoutubePanel = ({
   onCurrentTrackMetadata,
-  channel,
   playlistId,
-  index,
-  maxIndex,
 }: YoutubeTracksProps) => {
+  const [position, setPosition] = useState<number | null>(null);
   const { googleUserProfile } = useUserProfile();
   const [tracks, setTracks] = useState<YoutubePlaylistItem[] | null>(
     null,
   );
   const [isLoading, setIsLoading] = useState(false);
 
+  async function fetchTracks(position: number, playlistId: string) {
+    setIsLoading(true);
+    setTracks(null);
+    const response = await getPlaylistItems({
+      position,
+      playlistId,
+    });
+    const t = response?.[0];
+    if (t)
+      onCurrentTrackMetadata(`${t.title} ${t.artist} ${t.album}`);
+    setIsLoading(false);
+    setTracks(response);
+  }
+
+  useEffect(() => {
+    if (!position) return;
+    if (!tracks) {
+      fetchTracks(position, playlistId);
+      return;
+    }
+    const last = tracks.at(-1);
+    const first = tracks.at(0);
+    if (
+      (last && position > last.position) ||
+      (first && position < first.position)
+    )
+      fetchTracks(position, playlistId);
+  }, [position]);
+
   useEffect(() => {
     (async () => {
-      setIsLoading(true);
-      const response = await getPlaylistItems({
-        currentIndex: index,
-        playlistId,
-      });
-      setTracks(response);
-      setIsLoading(false);
+      const i = await getYoutubeTracksIndex();
+      if (i) setPosition(i);
     })();
   }, []);
 
-  useEffect(() => {
-    const t = tracks?.[index];
-    if (!t) return;
-    onCurrentTrackMetadata(`${t.title} ${t.artist} ${t.album}`);
-  }, [index, tracks]);
+  console.log(tracks);
 
   return (
     <section className="flex flex-col items-center space-y-5">
@@ -68,74 +88,56 @@ export const YoutubePanel = ({
         />
       )}
       {/* {tracks} */}
-      <div className="w-full grid row-end-[auto,_auto] grid-cols-[1fr_auto] gap-x-2 gap-y-1">
-        <p className="col-span-full">Current song</p>
-        <input
-          type="number"
-          value={index + 1}
-          className="w-full"
-          onChange={() => {}}
-          min={0}
-          max={maxIndex}
-        />
-        {/* <button className="btn block">Set</button> */}
-      </div>
-      <ul className="pr-4 py-4 self-stretch space-y-5 overflow-y-auto max-h-[600px_]">
-        {isLoading && <LoadingSkeletonTracks />}
-        {/* {tracks?.prev.map((track: Track) => (
-            <YoutubeTrack
-              key={track.q}
-              title={track.title}
-              artist={track.artist}
-              album={track.album}
-              q={track.q}
-              thumbnail={track.thumbnail}
-              onMoveToTrack={goPrevYTSong}
-              isPrev
-            />
-          ))}
-          {tracks?.current && (
-            <YoutubeTrack
-              title={tracks.current.title}
-              artist={tracks.current.artist}
-              album={tracks.current.album}
-              q={tracks.current.q}
-              thumbnail={tracks.current.thumbnail}
-              onNextTrack={() => {
-                fetch(window.origin + "/yt-tracks")
-                  .then(res => res.json())
-                  .then(data => setTracks(data));
-              }}
-            />
-          )} */}
-        {tracks?.slice(index, index + 1).map(track => (
-          <YoutubeTrack
-            key={track.id}
-            title={track.title}
-            artist={track.artist}
-            album={track.album}
-            q={"track.q"}
-            description={""}
-            thumbnail={track.thumbnail}
-            onNextTrack={() => {}}
-            index={track.index}
-            // viewOnly
+      {position && (
+        <div className="w-full grid row-end-[auto,_auto] grid-cols-[1fr_auto] gap-x-2 gap-y-1">
+          <p className="col-span-full">Current song</p>
+          <NumberInput
+            onValueChange={async v => {
+              setPosition(v);
+              await updateYoutubeTracksPosition(v);
+            }}
+            min={1}
+            max={1000}
+            defaultValue={position}
+            // key={position}
           />
-        ))}
-        {tracks?.slice(index + 1).map((track, i) => (
-          <YoutubeTrack
-            key={track.id}
-            title={track.title}
-            artist={track.artist}
-            album={track.album}
-            q={"track.q"}
-            description={track.description}
-            thumbnail={track.thumbnail}
-            onMoveToTrack={() => {}}
-            index={track.index}
-          />
-        ))}
-      </ul>
+        </div>
+      )}
+      {position && (
+        <ul className="pr-4 py-4 self-stretch space-y-5 overflow-y-auto max-h-[600px_]">
+          {isLoading && <LoadingSkeletonTracks />}
+          {tracks
+            ?.filter(t => t.position === position)
+            ?.map(track => (
+              <YoutubeTrack
+                key={track.id}
+                title={track.title}
+                artist={track.artist}
+                album={track.album}
+                q={"track.q"}
+                description={track.description}
+                thumbnail={track.thumbnail}
+                onNextTrack={() => setPosition(track.position + 1)}
+                index={track.position}
+              />
+            ))}
+          {tracks
+            ?.filter(t => t.position > position)
+            ?.map(track => (
+              <YoutubeTrack
+                key={track.id}
+                title={track.title}
+                artist={track.artist}
+                album={track.album}
+                q={"track.q"}
+                description={track.description}
+                thumbnail={track.thumbnail}
+                onMoveToTrack={() => {}}
+                index={track.position}
+              />
+            ))}
+        </ul>
+      )}
     </section>
   );
 };

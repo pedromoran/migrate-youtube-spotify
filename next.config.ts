@@ -5,6 +5,7 @@ const nextConfig: NextConfig = {
   images: {
     domains: ["i.ytimg.com"],
   },
+  reactStrictMode: false,
 };
 
 export default nextConfig;

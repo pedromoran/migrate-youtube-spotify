@@ -5,10 +5,7 @@ import { SpotifyPanel } from "src/components/SpotifyPanel";
 import { SpotifyPlaylists } from "src/components/SpotifyPlaylists";
 import { YoutubePanel } from "src/components/YoutubePanel";
 import { YoutubePlaylists } from "src/components/YoutubePlaylists";
-import {
-  getYoutubeTracksIndex,
-  incrementYoutubeTracksIndex,
-} from "../youtube/tracks-index";
+import { getYoutubeTracksIndex } from "../youtube/tracks-index";
 
 export default function YoutubeToSpotifyPage() {
   const { push } = useRouter();
@@ -18,23 +15,32 @@ export default function YoutubeToSpotifyPage() {
   const [youtubeSearch, setYoutubeSearch] = useState<string | null>(
     null,
   );
-  const [index, setIndex] = useState<number | null>(null);
+  const [youtubeTracksPosition, setYoutubeTracksPosition] = useState<
+    number | null
+  >(null);
+  const [
+    defaultYoutubeTracksPosition,
+    setDefaultYoutubeTracksPosition,
+  ] = useState<number | null>(null);
 
-  const handleNewSpotifyTrackAdded = async () => {
+  const handleNewYoutubeTracksPostion = async (p: number) => {
     try {
-      await incrementYoutubeTracksIndex();
-      setIndex(i => (i ? i + 1 : null));
+      setYoutubeTracksPosition(p);
+      // await handleNewYoutubeTracksPostion(p);
     } catch (error) {
       console.log(error);
     }
   };
 
-  useEffect(() => {
-    (async () => {
-      const i = await getYoutubeTracksIndex();
-      if (i) setIndex(i);
-    })();
-  }, []);
+  // useEffect(() => {
+  //   (async () => {
+  //     const i = await getYoutubeTracksIndex();
+  //     if (i) {
+  //       setYoutubeTracksPosition(i);
+  //       setDefaultYoutubeTracksPosition(i);
+  //     }
+  //   })();
+  // }, []);
 
   return (
     <div className="min-h-screen">
@@ -69,21 +75,23 @@ export default function YoutubeToSpotifyPage() {
           />
         )}
 
-        {youtubePlaylistId && spotifyPlaylistId && index && (
+        {youtubePlaylistId && spotifyPlaylistId && (
           <section className="grid grid-cols-[repeat(2,_600px)] gap-x-8">
             <YoutubePanel
-              channel={null}
               onCurrentTrackMetadata={s => setYoutubeSearch(s)}
               playlistId={youtubePlaylistId}
-              index={index}
             />
-            <SpotifyPanel
-              key={youtubeSearch}
-              onFetchedTracks={() => {}}
-              youtubeSearch={youtubeSearch}
-              onNewTrackAdded={handleNewSpotifyTrackAdded}
-              playlistId={spotifyPlaylistId}
-            />
+            {/* <SpotifyPanel
+                key={youtubeSearch}
+                onFetchedTracks={() => {}}
+                youtubeSearch={youtubeSearch}
+                onNewTrackAdded={() =>
+                  handleNewYoutubeTracksPostion(
+                    youtubeTracksPosition + 1,
+                  )
+                }
+                playlistId={spotifyPlaylistId}
+              /> */}
           </section>
         )}
       </main>

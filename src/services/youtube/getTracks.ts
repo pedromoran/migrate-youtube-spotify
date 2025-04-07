@@ -93,7 +93,7 @@ export interface YoutubePlaylistItem {
   thumbnail: string;
   artist: string;
   album: string;
-  index: number;
+  position: number;
 }
 
 function extractMetadata(title: string, description: string) {
@@ -119,11 +119,12 @@ function extractMetadata(title: string, description: string) {
 }
 
 function formatYoutubePlaylistItems(
+  prevLength: number,
   params: PlaylistItemsResponse["items"],
 ): YoutubePlaylistItem[] {
   return params
     .filter(p => p.snippet.title.toLowerCase() !== "deleted video")
-    .map(p => {
+    .map((p, i) => {
       const { album, artist } = extractMetadata(
         p.snippet.title,
         p.snippet.description,
@@ -138,30 +139,31 @@ function formatYoutubePlaylistItems(
         thumbnail: p.snippet.thumbnails.high?.url || "",
         album,
         artist,
-        index: -1,
+        position: prevLength + i + 1,
       };
     });
 }
 
 export async function getPlaylistItems({
-  currentIndex,
+  position,
   playlistId,
 }: {
   playlistId: string;
-  currentIndex: number;
+  position: number;
   // order: "newest_first" | "oldest_first" = "newest_first",
 }): Promise<YoutubePlaylistItem[] | null> {
   const access = await getGoogleAccessFromCookies();
   let plItems: YoutubePlaylistItem[] = [];
-  let totalResults: number | null = null;
-  let currentPage = 1;
+  let total: number | null = null;
+  const limit = 50;
+  let currPage = 1;
 
   async function recursive(pageToken?: string) {
     try {
       const p = new URLSearchParams();
       p.append("part", "contentDetails,id,snippet");
       p.append("playlistId", playlistId);
-      p.append("maxResults", "50");
+      p.append("maxResults", limit.toString());
       if (pageToken) p.append("pageToken", pageToken);
 
       const res = await axios.get<PlaylistItemsResponse>(
@@ -174,23 +176,25 @@ export async function getPlaylistItems({
         },
       );
 
-      plItems.push(...formatYoutubePlaylistItems(res.data.items));
-      if (
-        (totalResults && plItems.length >= totalResults) ||
-        plItems.length > currentIndex
-      ) {
-        //* Calculate the index of each item based on current page
-        plItems = plItems.slice(currentIndex).map((plI, i) => {
-          if (currentPage === 1) return { ...plI, index: i };
-          return { ...plI, index: currentPage - 1 * 50 + i };
-        });
-        return;
-      }
-      if (totalResults === null)
-        totalResults = res.data.pageInfo.totalResults;
+      total = res.data.pageInfo.totalResults;
+      plItems.push(...formatYoutubePlaylistItems(plItems.length, res.data.items)); //prettier-ignore
 
-      currentPage++;
-      await recursive(res.data.nextPageToken);
+      // if (plItems.length >= total || plItems.length - 10 > position) {
+      // if (isInRange) {
+      //   if (currPage !== 1) {
+      //     const start = plItems.length - 11 - limit;
+      //     const end = plItems.length - 11;
+      //     plItems = plItems.slice(start, end);
+      //   }
+      //   return;
+      // }
+
+      if (position > plItems.length) {
+        currPage++;
+        await recursive(res.data.nextPageToken);
+      }
+      plItems = plItems.slice(plItems.length - limit);
+      return;
     } catch (error) {
       if (
         pageToken &&
@@ -207,29 +211,6 @@ export async function getPlaylistItems({
   }
 
   if (!access) return null;
-  // if (order === "oldest_first") {
-  // }
-
   await recursive();
   return plItems;
-  // try {
-  //   const p = new URLSearchParams();
-  //   p.append("part", "contentDetails,id,snippet");
-  //   p.append("playlistId", playlistId);
-  //   p.append("maxResults", "20");
-
-  //   const { data } = await axios.get<PlaylistItemsResponse>(
-  //     "https://www.googleapis.com/youtube/v3/playlistItems?" +
-  //       p.toString(),
-  //     {
-  //       headers: {
-  //         Authorization: `${access.token_type} ${access.access_token}`,
-  //       },
-  //     },
-  //   );
-
-  //   return formatYoutubePlaylistItems(data.items);
-  // } catch (error) {
-  //   return null;
-  // }
 }
