@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { SpotifyTrack } from "./SpotifyTrack";
 import { SearchResponse } from "../interfaces/spotify/search-response";
 import Image from "node_modules/next/image";
@@ -11,12 +11,15 @@ import { removeSpotifyCookies } from "src/utils/removeSpotifyCookies";
 import { getSpotifyAccessFromCookies } from "src/utils/getSpotifyAccessFromCookies";
 import { LoadingSkeletonTracks } from "./LoadingSkeletonTracks";
 import { useUserProfile } from "src/app/user-profile-provider";
+import classNames from "node_modules/classnames";
 
 interface SpotifyPanelProps {
   youtubeSearch: string | null;
   onFetchedTracks: (tracks: SpotifyTrack[]) => void; //* are used to compare with youtube tracks in the parent component
   onNewTrackAdded: () => void;
   playlistId?: string;
+  setIsAutoAdditionOn: (isAutoAdditionOn: boolean) => void;
+  isAutoAdditionOn: boolean;
 }
 
 export const SpotifyPanel = ({
@@ -24,6 +27,8 @@ export const SpotifyPanel = ({
   onFetchedTracks,
   onNewTrackAdded,
   playlistId,
+  isAutoAdditionOn,
+  setIsAutoAdditionOn,
 }: SpotifyPanelProps) => {
   const { spotifyUserProfile } = useUserProfile();
   const controllerRef = useRef(new AbortController());
@@ -31,6 +36,27 @@ export const SpotifyPanel = ({
   const [isLoadingTracks, setIsLoadingTracks] = useState(false);
   const [isAddingTrackToPlaylist, setIsAddingTrackToPlaylist] =
     useState(false);
+
+  const notifyMismatch = () => {
+    if (Notification.permission === "granted") {
+      new Notification("There is a mismatch! 🙂");
+      new Audio("notification.wav").play();
+      return;
+    }
+  };
+
+  useEffect(() => {
+    if (!("Notification" in window)) {
+      alert("This browser does not support desktop notification");
+      return;
+    }
+
+    if (Notification.permission === "default") {
+      alert("Let us notify you when there is a mismatch!");
+      Notification.requestPermission();
+      return;
+    }
+  }, []);
 
   const addTrackToSpotifyPlaylist = async (
     playlistId: string,
@@ -63,7 +89,9 @@ export const SpotifyPanel = ({
           );
         })
         .then(r => r);
-      onNewTrackAdded();
+      setTimeout(() => {
+        onNewTrackAdded();
+      }, 1000);
     } catch (e) {
       const error = e as { name: string; message: string };
       if (error.name === "AbortError") return;
@@ -73,16 +101,57 @@ export const SpotifyPanel = ({
     }
   };
 
-  const fetchSpotifyTracks = async (search: string) => {
-    if (search === "") {
-      controllerRef.current.abort();
-      setTracks([]);
+  const compareSpotifyTracks = async (
+    search: string,
+    tracks: SpotifyTrack[],
+  ) => {
+    const artists = tracks[0].artist.split(", ");
+    let firstExplicit = false;
+    let hasElseWithExplicit = false;
+    tracks.forEach((t, i) => {
+      if (i === 0) {
+        firstExplicit = t.explicit;
+      } else if (
+        t.explicit &&
+        search.toLowerCase().includes(t.title.toLowerCase()) &&
+        artists.every(a =>
+          search.toLowerCase().includes(a.toLowerCase()),
+        )
+      ) {
+        hasElseWithExplicit = true;
+      }
+    });
+
+    if (!firstExplicit && hasElseWithExplicit) {
+      notifyMismatch();
+      alert("check explicit");
       setIsLoadingTracks(false);
       return;
     }
+
+    if (
+      search.toLowerCase().includes(tracks[0].title.toLowerCase()) &&
+      artists.every(a =>
+        search.toLowerCase().includes(a.toLowerCase()),
+      )
+    ) {
+      // alert("perfect match");
+      await addTrackToSpotifyPlaylist(playlistId ?? "", tracks[0]);
+    } else {
+      notifyMismatch();
+    }
+  };
+
+  const fetchSpotifyTracks = async (search: string) => {
     controllerRef.current.abort();
     controllerRef.current = new AbortController();
+    setTracks([]);
     setIsLoadingTracks(true);
+
+    if (search === "") {
+      setIsLoadingTracks(false);
+      return;
+    }
 
     const params = new URLSearchParams();
     params.append("q", search);
@@ -114,43 +183,9 @@ export const SpotifyPanel = ({
       const formattedTracks = formatSpotifyTracks(data);
       setTracks(formattedTracks);
       onFetchedTracks(formattedTracks);
-      const artists = formattedTracks[0].artist.split(", ");
-      let firstExplicit = false;
-      let hasElseWithExplicit = false;
-      formattedTracks.forEach((t, i) => {
-        if (i === 0) {
-          firstExplicit = t.explicit;
-        } else if (
-          t.explicit &&
-          search.toLowerCase().includes(t.title.toLowerCase())
-        ) {
-          hasElseWithExplicit = true;
-        }
-      });
-
-      if (!firstExplicit && hasElseWithExplicit) {
-        alert("check explicit");
-        setIsLoadingTracks(false);
-        return;
-      }
-
-      if (
-        search
-          .toLowerCase()
-          .includes(formattedTracks[0].title.toLowerCase()) &&
-        artists.every(a =>
-          search.toLowerCase().includes(a.toLowerCase()),
-        )
-      ) {
-        alert("perfect match");
-        // addTrackToSpotifyPlaylist(
-        //   playlistId ?? "",
-        //   formattedTracks[0],
-        // );
-      } else {
-        // TODO: notify
-      }
       setIsLoadingTracks(false);
+      if (isAutoAdditionOn)
+        await compareSpotifyTracks(search, formattedTracks);
     } catch (e) {
       const error = e as { name: string; message: string };
       if (error.name === "AbortError") return;
@@ -195,6 +230,25 @@ export const SpotifyPanel = ({
             defaultValue={youtubeSearch ?? ""}
             onValueChange={v => fetchSpotifyTracks(v)}
           />
+          <button
+            className={classNames(
+              "btn block",
+              isAutoAdditionOn ? "bg-orange-400" : "bg-sky-800",
+            )}
+            onClick={() => {
+              if (!isAutoAdditionOn) {
+                compareSpotifyTracks(
+                  youtubeSearch ?? "",
+                  tracks ?? [],
+                );
+              }
+              setIsAutoAdditionOn(!isAutoAdditionOn);
+            }}
+          >
+            {isAutoAdditionOn
+              ? "Pause auto addition"
+              : "Activate auto addition"}
+          </button>
         </div>
       </header>
       <ul className="pr-4 py-4 self-stretch space-y-5 overflow-y-auto max-h-[600px]">

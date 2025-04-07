@@ -4,7 +4,6 @@ import { YoutubeTrack } from "./YoutubeTrack";
 import Image from "next/image";
 import { ProfileInfo } from "./common/ProfileInfo";
 import { removeGoogleCookies } from "src/utils/removeGoogleCookies";
-
 import { LoadingSkeletonTracks } from "./LoadingSkeletonTracks";
 import { useUserProfile } from "src/app/user-profile-provider";
 import {
@@ -12,10 +11,7 @@ import {
   YoutubePlaylistItem,
 } from "src/services/youtube/getTracks";
 import { NumberInput } from "./NumberInput";
-import {
-  getYoutubeTracksIndex,
-  updateYoutubeTracksPosition,
-} from "src/app/youtube/tracks-index";
+import { updateYoutubeTracksPosition } from "src/app/youtube/tracks-index";
 
 interface YoutubeTracksProps {
   onCurrentTrackMetadata: (metadata: string) => void;
@@ -43,7 +39,7 @@ export const YoutubePanel = ({
       position,
       playlistId,
     });
-    const t = response?.[position - 1];
+    const t = response?.[(position % response.length) - 1];
     if (t)
       onCurrentTrackMetadata(`${t.title} ${t.artist} ${t.album}`);
     setIsLoading(false);
@@ -61,8 +57,13 @@ export const YoutubePanel = ({
     if (
       (last && position > last.position) ||
       (first && position < first.position)
-    )
+    ) {
       fetchTracks(position, playlistId);
+    } else {
+      const t = tracks[(position % tracks.length) - 1];
+      if (t)
+        onCurrentTrackMetadata(`${t.title} ${t.artist} ${t.album}`);
+    }
   }, [position]);
 
   return (
@@ -93,7 +94,7 @@ export const YoutubePanel = ({
             min={1}
             max={1000}
             defaultValue={position}
-            // key={position}
+            key={position}
           />
         </div>
       )}

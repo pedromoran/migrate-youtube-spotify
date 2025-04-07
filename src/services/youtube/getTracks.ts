@@ -134,6 +134,8 @@ function formatYoutubePlaylistItems(
         id: p.id,
         title: p.snippet.title
           .replace(/\([^)]*[Vv][Ii][Dd][Ee][Oo][^)]*\)/g, "")
+          .replace(/\[[^)]*[Vv][Ii][Dd][Ee][Oo][^)]*\]/g, "")
+          .replace(/(?<=[(\s])[Ff][Tt]\.?(?=[)\s])/g, "")
           .replace(/\([^)]*[Aa][Uu][Dd][Ii][Oo][^)]*\)/g, ""),
         description: p.snippet.description,
         thumbnail: p.snippet.thumbnails.high?.url || "",

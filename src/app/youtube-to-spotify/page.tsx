@@ -15,6 +15,7 @@ export default function YoutubeToSpotifyPage() {
   const searchParams = useSearchParams();
   const youtubePlaylistId = searchParams.get("yt");
   const spotifyPlaylistId = searchParams.get("sfy");
+  const [isAutoAdditionOn, setIsAutoAdditionOn] = useState(false);
   const [youtubeSearch, setYoutubeSearch] = useState<string | null>(
     null,
   );
@@ -80,6 +81,8 @@ export default function YoutubeToSpotifyPage() {
                 key={youtubeSearch}
                 onFetchedTracks={() => {}}
                 youtubeSearch={youtubeSearch}
+                isAutoAdditionOn={isAutoAdditionOn}
+                setIsAutoAdditionOn={setIsAutoAdditionOn}
                 onNewTrackAdded={() =>
                   handleNewYoutubeTracksPosition(
                     youtubeTracksPosition + 1,
