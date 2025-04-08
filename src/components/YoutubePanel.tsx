@@ -100,7 +100,7 @@ export const YoutubePanel = ({
                 await updateYoutubeTracksPosition(v);
               }}
               min={1}
-              max={1000}
+              max={10000}
               defaultValue={position}
               key={position}
             />
