@@ -12,6 +12,7 @@ import { LoadingSkeletonTracks } from "./LoadingSkeletonTracks";
 import { useUserProfile } from "src/app/user-profile-provider";
 import classNames from "node_modules/classnames";
 import { LoadingLine } from "./LoadingLine";
+import { AxiosError } from "node_modules/axios";
 
 interface SpotifyPanelProps {
   youtubeSearch: string | null;
@@ -99,9 +100,20 @@ export const SpotifyPanel = ({
       console.log("set null");
       onNewTrackAdded();
     } catch (e) {
-      const error = e as { name: string; message: string };
+      const error = e as AxiosError<{
+        error?: {
+          status?: 401;
+          message?: "The access token expired";
+        };
+      }>;
       if (error.name === "AbortError") return;
       // alert(error.message);
+      const isExpiredToken = error.response?.data?.error?.message
+        ?.toLowerCase()
+        .includes("expired");
+      if (isExpiredToken) {
+        window.location.reload();
+      }
     } finally {
       setIsAddingTrackToPlaylist(false);
     }
