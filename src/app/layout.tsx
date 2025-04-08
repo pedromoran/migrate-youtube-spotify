@@ -35,7 +35,22 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const { authorization } = await getSpotifyAccessFromCookies();
-  const gle = await getGoogleUserProfile();
+  const cookieStore = await cookies();
+
+  const google_access_token = cookieStore.get(
+    GoogleCookieEnum.access_token,
+  )?.value;
+  const google_refresh_token = cookieStore.get(
+    GoogleCookieEnum.refresh_token,
+  )?.value;
+  const google_token_type = cookieStore.get(
+    GoogleCookieEnum.token_type,
+  )?.value;
+
+  const gle = await getGoogleUserProfile({
+    authorization: `${google_token_type} ${google_access_token}`,
+    refresh_token: google_refresh_token!,
+  });
   const sfy = await getSpotifyUserProfile(authorization);
 
   return (

@@ -96,6 +96,7 @@ export const SpotifyPanel = ({
         })
         .then(r => r);
       setTracks(null);
+      console.log("set null");
       onNewTrackAdded();
     } catch (e) {
       const error = e as { name: string; message: string };
@@ -145,6 +146,7 @@ export const SpotifyPanel = ({
     controllerRef.current.abort();
     controllerRef.current = new AbortController();
     setTracks([]);
+    console.log("set empty");
     setIsLoadingTracks(true);
 
     if (search === "") {
@@ -182,13 +184,17 @@ export const SpotifyPanel = ({
       const formattedTracks = formatSpotifyTracks(data);
       setTracks(formattedTracks);
       onFetchedTracks(formattedTracks);
+      console.log("set tracks", formattedTracks.length);
       setIsLoadingTracks(false);
     } catch (e) {
       const error = e as { name: string; message: string };
       if (error.name === "AbortError") return;
       setIsLoadingTracks(false);
+      console.log(error);
     }
   };
+
+  console.log(tracks);
 
   return (
     <section className="space-y-7">
@@ -280,7 +286,7 @@ function formatSpotifyTracks(
         .trim(),
       album: album.name,
       explicit,
-      thumbnail: album.images[1].url,
+      thumbnail: album.images[1]?.url || null,
       link: external_urls.spotify,
       id,
     };

@@ -3,6 +3,7 @@ import { getGoogleUserProfile } from "./services/youtube/getGoogleUserProfile";
 import { getSpotifyUserProfile } from "./services/spotify/getSpotifyUserProfile";
 import { cookies } from "next/headers";
 import { SpotifyCookieEnum } from "./interfaces/spotify-cookies";
+import { GoogleCookieEnum } from "./app/auth/google/cookies";
 
 export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
@@ -25,15 +26,31 @@ async function youtubeRoute(request: NextRequest) {
   "use server";
   const path = request.nextUrl.pathname;
   const cookieStore = await cookies();
-  const youtubeUserProfile = await getGoogleUserProfile();
-  const access_token = cookieStore.get(
-    SpotifyCookieEnum.access_token,
+
+  const google_access_token = cookieStore.get(
+    GoogleCookieEnum.access_token,
   )?.value;
-  const token_type = cookieStore.get(
+  const google_refresh_token = cookieStore.get(
+    GoogleCookieEnum.refresh_token,
+  )?.value;
+  const google_token_type = cookieStore.get(
+    GoogleCookieEnum.token_type,
+  )?.value;
+
+  const youtubeUserProfile = await getGoogleUserProfile({
+    authorization: `${google_token_type} ${google_access_token}`,
+    refresh_token: google_refresh_token!,
+  });
+
+  const spotify_token_type = cookieStore.get(
     SpotifyCookieEnum.token_type,
   )?.value;
+  const spotify_access_token = cookieStore.get(
+    SpotifyCookieEnum.access_token,
+  )?.value;
+
   const spotifyUserProfile = await getSpotifyUserProfile(
-    `${token_type} ${access_token}`,
+    `${spotify_token_type} ${spotify_access_token}`,
   );
 
   if (path === "/youtube-access") {
@@ -103,4 +120,23 @@ async function spotifyRoute(request: NextRequest) {
   }
 
   return NextResponse.next();
+}
+
+export async function getGoogleAccessFromCookies() {
+  const cookieStore = await cookies();
+  const access_token = cookieStore.get(
+    GoogleCookieEnum.access_token,
+  )?.value;
+  const refresh_token = cookieStore.get(
+    GoogleCookieEnum.refresh_token,
+  )?.value;
+  const token_type = cookieStore.get(
+    GoogleCookieEnum.token_type,
+  )?.value;
+  return {
+    access_token,
+    refresh_token,
+    token_type,
+    authorization: `${token_type} ${access_token}`,
+  };
 }

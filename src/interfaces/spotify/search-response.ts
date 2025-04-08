@@ -40,7 +40,7 @@ export interface Album {
   external_urls: ExternalUrls2;
   href: string;
   id: string;
-  images: Image[];
+  images: (Image | undefined)[];
   is_playable: boolean;
   name: string;
   release_date: string;

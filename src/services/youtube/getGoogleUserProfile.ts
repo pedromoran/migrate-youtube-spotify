@@ -68,11 +68,17 @@ export interface YoutubeUserProfile {
   thumbnail: string;
 }
 
-export async function getGoogleUserProfile(): Promise<
+export async function getGoogleUserProfile({
+  authorization,
+  refresh_token,
+}: {
+  authorization: string;
+  refresh_token: string;
+}): Promise<
   YoutubeUserProfile | null | "unauthorized" | "unauthenticated"
 > {
-  const { authorization, refresh_token } =
-    await getGoogleAccessFromCookies();
+  // const { authorization, refresh_token } =
+  //   await getGoogleAccessFromCookies();
   const url = new URL(process.env.YOUTUBE_ENDPOINT_CHANNELS || "");
 
   url.searchParams.append("part", "snippet");
@@ -121,7 +127,10 @@ export async function getGoogleUserProfile(): Promise<
           access_token: auth.access_token,
           token_type: auth.token_type,
         });
-        return await getGoogleUserProfile();
+        return await getGoogleUserProfile({
+          authorization: `${auth.token_type} ${auth.access_token}`,
+          refresh_token: auth.refresh_token,
+        });
       }
       return "unauthorized";
     }
@@ -162,6 +171,7 @@ interface RefreshTokenResponse {
   expires_in: number;
   scope: string;
   token_type: string;
+  refresh_token: string;
 }
 // NEXT_PUBLIC_GOOGLE_REFRESH_TOKEN_ENDPOINT
 
