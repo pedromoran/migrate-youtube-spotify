@@ -73,39 +73,42 @@ export const YoutubePanel = ({
   }, [position]);
 
   return (
-    <section className="flex flex-col items-center space-y-5">
-      <Image
-        className="mx-auto"
-        src="/youtube_music.svg"
-        alt="youtube music logo"
-        width={120}
-        height={120}
-      />
-      {googleUserProfile && (
-        <ProfileInfo
-          image={googleUserProfile.thumbnail}
-          title={googleUserProfile.title}
-          onClickSignOut={() => removeGoogleCookies()}
+    <section className="space-y-7">
+      <header className="flex flex-col items-center space-y-5">
+        <Image
+          className="mx-auto"
+          src="/youtube.svg"
+          alt="youtube logo"
+          quality={100}
+          width={120}
+          height={120}
         />
-      )}
-      {/* {tracks} */}
-      {position && (
-        <div className="w-full grid row-end-[auto,_auto] grid-cols-[1fr_auto] gap-x-2 gap-y-1">
-          <p className="col-span-full">Current song</p>
-          <NumberInput
-            onValueChange={async v => {
-              onPositionChange(v);
-              await updateYoutubeTracksPosition(v);
-            }}
-            min={1}
-            max={1000}
-            defaultValue={position}
-            key={position}
+        {googleUserProfile && (
+          <ProfileInfo
+            image={googleUserProfile.thumbnail}
+            title={googleUserProfile.title}
+            onClickSignOut={() => removeGoogleCookies()}
           />
-        </div>
-      )}
+        )}
+        {/* {tracks} */}
+        {position && (
+          <div className="w-full grid row-end-[auto,_auto] gap-x-2 gap-y-1">
+            <p className="col-span-full">Current song</p>
+            <NumberInput
+              onValueChange={async v => {
+                onPositionChange(v);
+                await updateYoutubeTracksPosition(v);
+              }}
+              min={1}
+              max={1000}
+              defaultValue={position}
+              key={position}
+            />
+          </div>
+        )}
+      </header>
       {position && (
-        <ul className="pr-4 py-4 self-stretch space-y-5 overflow-y-auto max-h-[600px_]">
+        <ul className="self-stretch space-y-5">
           {isLoading && <LoadingSkeletonTracks />}
           {tracks
             ?.filter(t => t.position === position)

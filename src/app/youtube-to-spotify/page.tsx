@@ -1,6 +1,6 @@
 "use client";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useReducer, useRef, useState } from "react";
 import { SpotifyPanel } from "src/components/SpotifyPanel";
 import { SpotifyPlaylists } from "src/components/SpotifyPlaylists";
 import { YoutubePanel } from "src/components/YoutubePanel";
@@ -15,7 +15,9 @@ export default function YoutubeToSpotifyPage() {
   const searchParams = useSearchParams();
   const youtubePlaylistId = searchParams.get("yt");
   const spotifyPlaylistId = searchParams.get("sfy");
-  const [isAutoAdditionOn, setIsAutoAdditionOn] = useState(false);
+  const reRender = useReducer(c => c + 1, 0)[1];
+  const isAutoAdditionOnRef = useRef(false);
+  // const [isAutoAdditionOn, setIsAutoAdditionOn] = useState(false);
   const [youtubeSearch, setYoutubeSearch] = useState<string | null>(
     null,
   );
@@ -81,8 +83,15 @@ export default function YoutubeToSpotifyPage() {
                 key={youtubeSearch}
                 onFetchedTracks={() => {}}
                 youtubeSearch={youtubeSearch}
-                isAutoAdditionOn={isAutoAdditionOn}
-                setIsAutoAdditionOn={setIsAutoAdditionOn}
+                isAutoAdditionOnRef={isAutoAdditionOnRef}
+                activateAutoAddition={() => {
+                  isAutoAdditionOnRef.current = true;
+                  reRender();
+                }}
+                deactivateAutoAddition={() => {
+                  isAutoAdditionOnRef.current = false;
+                  reRender();
+                }}
                 onNewTrackAdded={() =>
                   handleNewYoutubeTracksPosition(
                     youtubeTracksPosition + 1,

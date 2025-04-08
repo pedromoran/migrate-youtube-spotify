@@ -1,10 +1,9 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { RefObject, useEffect, useRef, useState } from "react";
 import { SpotifyTrack } from "./SpotifyTrack";
 import { SearchResponse } from "../interfaces/spotify/search-response";
 import Image from "node_modules/next/image";
 import { SearchInput } from "./SearchInput";
-import { SpotifyUserProfile } from "src/interfaces/spotify/user-profile";
 import { SpotifyCookieEnum } from "src/interfaces/spotify-cookies";
 import { ProfileInfo } from "./common/ProfileInfo";
 import { removeSpotifyCookies } from "src/utils/removeSpotifyCookies";
@@ -12,14 +11,16 @@ import { getSpotifyAccessFromCookies } from "src/utils/getSpotifyAccessFromCooki
 import { LoadingSkeletonTracks } from "./LoadingSkeletonTracks";
 import { useUserProfile } from "src/app/user-profile-provider";
 import classNames from "node_modules/classnames";
+import { LoadingLine } from "./LoadingLine";
 
 interface SpotifyPanelProps {
   youtubeSearch: string | null;
   onFetchedTracks: (tracks: SpotifyTrack[]) => void; //* are used to compare with youtube tracks in the parent component
   onNewTrackAdded: () => void;
   playlistId?: string;
-  setIsAutoAdditionOn: (isAutoAdditionOn: boolean) => void;
-  isAutoAdditionOn: boolean;
+  isAutoAdditionOnRef: RefObject<boolean>;
+  activateAutoAddition: () => void;
+  deactivateAutoAddition: () => void;
 }
 
 export const SpotifyPanel = ({
@@ -27,8 +28,9 @@ export const SpotifyPanel = ({
   onFetchedTracks,
   onNewTrackAdded,
   playlistId,
-  isAutoAdditionOn,
-  setIsAutoAdditionOn,
+  isAutoAdditionOnRef,
+  activateAutoAddition,
+  deactivateAutoAddition,
 }: SpotifyPanelProps) => {
   const { spotifyUserProfile } = useUserProfile();
   const controllerRef = useRef(new AbortController());
@@ -93,9 +95,8 @@ export const SpotifyPanel = ({
           );
         })
         .then(r => r);
-      setTimeout(() => {
-        onNewTrackAdded();
-      }, 1000);
+      setTracks(null);
+      onNewTrackAdded();
     } catch (e) {
       const error = e as { name: string; message: string };
       if (error.name === "AbortError") return;
@@ -110,36 +111,22 @@ export const SpotifyPanel = ({
     tracks: SpotifyTrack[],
   ) => {
     const artists = tracks[0].artist.split(", ");
-    let firstExplicit = false;
-    let hasElseWithExplicit = false;
-    tracks.forEach((t, i) => {
-      if (i === 0) {
-        firstExplicit = t.explicit;
-      } else if (
+    const hasElseWithExplicit = tracks.some(
+      (t, i) =>
+        i > 0 &&
+        !tracks[0].explicit &&
         t.explicit &&
         search.toLowerCase().includes(t.title.toLowerCase()) &&
-        artists.every(a =>
-          search.toLowerCase().includes(a.toLowerCase()),
-        )
-      ) {
-        hasElseWithExplicit = true;
-      }
-    });
+        tracks[i].artist
+          .split(", ")
+          .every(a => search.toLowerCase().includes(a.toLowerCase())),
+    );
 
-    if (!firstExplicit && hasElseWithExplicit) {
+    if (hasElseWithExplicit) {
       notifyMismatch("check explicit");
       setIsLoadingTracks(false);
       return;
     }
-
-    console.log({
-      title: search
-        .toLowerCase()
-        .includes(tracks[0].title.toLowerCase()),
-      artists: artists.every(a =>
-        search.toLowerCase().includes(a.toLowerCase()),
-      ),
-    });
 
     if (
       search.toLowerCase().includes(tracks[0].title.toLowerCase()) &&
@@ -196,28 +183,15 @@ export const SpotifyPanel = ({
       setTracks(formattedTracks);
       onFetchedTracks(formattedTracks);
       setIsLoadingTracks(false);
-      if (isAutoAdditionOn)
-        await compareSpotifyTracks(search, formattedTracks);
     } catch (e) {
       const error = e as { name: string; message: string };
       if (error.name === "AbortError") return;
       setIsLoadingTracks(false);
-      // alert(error.message);
     }
   };
-  // curl --request POST \
-  // --url 'https://api.spotify.com/v1/playlists/546pGyqcbtR0aiOPlIHIN8/tracks?position=0&uris=spotify%3Atrack%3A0eO2zq5fjPt41BreFmiIKw' \
-  // --header 'Authorization: Bearer 1POdFZRZbvb...qqillRxMr2z' \
-  // --header 'Content-Type: application/json' \
-  // --data '{
-  //   "uris": [
-  //       "string"
-  //   ],
-  //   "position": 0
-  // }'
 
   return (
-    <section className="space-y-5">
+    <section className="space-y-7">
       <header className="flex flex-col items-center space-y-5">
         <Image
           src="/spotify.svg"
@@ -245,25 +219,34 @@ export const SpotifyPanel = ({
           <button
             className={classNames(
               "btn block",
-              isAutoAdditionOn ? "bg-orange-400" : "bg-sky-800",
+              isAutoAdditionOnRef.current
+                ? "bg-orange-400"
+                : "bg-sky-800",
             )}
-            onClick={() => {
-              if (!isAutoAdditionOn) {
-                compareSpotifyTracks(
-                  youtubeSearch ?? "",
-                  tracks ?? [],
-                );
-              }
-              setIsAutoAdditionOn(!isAutoAdditionOn);
-            }}
+            onClick={
+              isAutoAdditionOnRef.current
+                ? deactivateAutoAddition
+                : activateAutoAddition
+            }
           >
-            {isAutoAdditionOn
+            {isAutoAdditionOnRef.current
               ? "Pause auto addition"
               : "Activate auto addition"}
           </button>
         </div>
       </header>
-      <ul className="pr-4 py-4 self-stretch space-y-5 overflow-y-auto max-h-[600px]">
+      {isAutoAdditionOnRef.current &&
+        tracks &&
+        tracks?.length > 0 && (
+          <LoadingLine
+            duration={0}
+            onFinished={() => {
+              if (youtubeSearch && tracks)
+                compareSpotifyTracks(youtubeSearch, tracks);
+            }}
+          />
+        )}
+      <ul className="relative self-stretch space-y-5">
         {isLoadingTracks && <LoadingSkeletonTracks />}
         {tracks?.map(track => (
           <SpotifyTrack
