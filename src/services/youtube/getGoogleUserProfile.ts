@@ -2,7 +2,7 @@
 import axios, { AxiosError } from "node_modules/axios";
 import { getGoogleAccessFromCookies } from "../../utils/getGoogleAccessFromCookies";
 import { cookies } from "node_modules/next/headers";
-import { setGoogleAccessIntoCookies } from "src/app/auth/google/setGoogleAccessIntoCookies";
+import { setGoogleAccessIntoCookies } from "src/utils/setGoogleAccessIntoCookies";
 
 interface YoutubeChannelResponse {
   kind: string;
@@ -75,7 +75,11 @@ export async function getGoogleUserProfile({
   authorization: string;
   refresh_token: string;
 }): Promise<
-  YoutubeUserProfile | null | "unauthorized" | "unauthenticated"
+  | YoutubeUserProfile
+  | null
+  | "token_expired"
+  | "unauthenticated"
+  | "unauthorized"
 > {
   // const { authorization, refresh_token } =
   //   await getGoogleAccessFromCookies();
@@ -121,18 +125,7 @@ export async function getGoogleUserProfile({
         .toLowerCase()
         .includes("unauthenticated")
     ) {
-      const auth = await refreshToken(refresh_token || "");
-      if (auth) {
-        await setGoogleAccessIntoCookies({
-          access_token: auth.access_token,
-          token_type: auth.token_type,
-        });
-        return await getGoogleUserProfile({
-          authorization: `${auth.token_type} ${auth.access_token}`,
-          refresh_token: auth.refresh_token,
-        });
-      }
-      return "unauthorized";
+      return "token_expired";
     }
 
     if (
@@ -165,32 +158,3 @@ export async function getGoogleUserProfile({
 // client_secret=your_client_secret&
 // refresh_token=refresh_token&
 // grant_type=refresh_token
-
-interface RefreshTokenResponse {
-  access_token: string;
-  expires_in: number;
-  scope: string;
-  token_type: string;
-  refresh_token: string;
-}
-// NEXT_PUBLIC_GOOGLE_REFRESH_TOKEN_ENDPOINT
-
-async function refreshToken(
-  refresh_token: string,
-): Promise<RefreshTokenResponse | null> {
-  try {
-    const response = await axios.post<RefreshTokenResponse>(
-      process.env.NEXT_PUBLIC_GOOGLE_REFRESH_TOKEN_ENDPOINT || "",
-      {
-        client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
-        client_secret: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_SECRET,
-        grant_type: "refresh_token",
-        refresh_token,
-      },
-    );
-    return response.data;
-  } catch (error) {
-    console.log(error);
-    return null;
-  }
-}

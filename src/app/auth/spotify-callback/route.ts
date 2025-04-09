@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import axios, { AxiosRequestConfig } from "node_modules/axios";
 import { NextRequest } from "node_modules/next/server";
 import { SpotifyCookieEnum } from "src/interfaces/spotify-cookies";
+import { setSpotifyAccessIntoCookies } from "src/utils/setSpotifyAccessIntoCookies";
 
 interface AccessTokenResponse {
   access_token: string;
@@ -33,15 +34,12 @@ export async function GET(req: NextRequest) {
         redirect_uri: req.nextUrl.origin + req.nextUrl.pathname,
       });
       if (!auth) return Response.redirect(req.nextUrl.origin);
-      cookieStore.set(SpotifyCookieEnum.token_type, auth.token_type);
-      cookieStore.set(
-        SpotifyCookieEnum.access_token,
-        auth.access_token,
-      );
-      cookieStore.set(
-        SpotifyCookieEnum.refresh_token,
-        auth.refresh_token,
-      );
+      setSpotifyAccessIntoCookies({
+        access_token: auth.access_token,
+        token_type: auth.token_type,
+        expires_in: auth.expires_in,
+        refresh_token: auth.refresh_token,
+      });
       return Response.redirect(req.nextUrl.origin);
     } catch (error) {
       req.nextUrl.searchParams.append("error", "access_denied");

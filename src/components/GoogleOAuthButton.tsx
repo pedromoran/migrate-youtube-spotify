@@ -1,7 +1,7 @@
 "use client";
 import Script from "next/script";
 import { useRef } from "react";
-import { setGoogleAccessIntoCookies } from "src/app/auth/google/setGoogleAccessIntoCookies";
+import { setGoogleAccessIntoCookies } from "src/utils/setGoogleAccessIntoCookies";
 import { generateAccessToken } from "src/app/auth/spotify/generateAccessToken";
 
 // https://developers.google.com/identity/oauth2/web/reference/js-reference#CodeClientConfig
