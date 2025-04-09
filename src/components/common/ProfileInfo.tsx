@@ -16,7 +16,7 @@ export const ProfileInfo = ({
           <img
             src={image}
             className="rounded-full w-full h-full object-cover"
-            alt="spotify user profile image"
+            alt={title}
           />
         ) : (
           <span className="grid place-content-center w-full h-full rounded-full text-4xl font-extrabold bg-sky-700 text-white">
