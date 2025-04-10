@@ -4,7 +4,6 @@ interface NumberInputProps extends HTMLAttributes<HTMLInputElement> {
   defaultValue: number;
   onValueChange: (v: number) => void;
   min: number;
-  max: number;
 }
 
 export function NumberInput({

@@ -176,7 +176,8 @@ export const SpotifyPanel = ({
     if (!authorization) return;
     try {
       const data = await fetch(
-        "https://api.spotify.com/v1/search?" + params.toString(),
+        "https://api.spotify.com/v1/search?limit=50&" +
+          params.toString(),
         {
           headers: { authorization },
           signal,
